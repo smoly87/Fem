@@ -5,6 +5,7 @@
  */
 package engine;
 
+import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
 /**
@@ -13,5 +14,5 @@ import org.apache.commons.math3.linear.RealMatrix;
  */
 @FunctionalInterface
 public interface SysBlockBuilder{
-    RealMatrix apply(Element elem, Integer l, Integer m);
+    OpenMapRealMatrix apply(Element elem, Integer l, Integer m);
 }

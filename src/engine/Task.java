@@ -5,6 +5,7 @@
  */
 package engine;
 
+import elemfunc.d1.LinN;
 import engine.utils.common.Pair;
 import engine.utils.openmap.RealVectorRemoveWalker;
 import engine.utils.openmap.SparseMatrixRemoverWalker;
@@ -28,7 +29,7 @@ public class Task {
     protected OpenMapRealVector F;
     protected Mesh mesh;
     protected BoundaryConditions boundaryConitions;
-
+    protected ElemFunc elemFunc ;
     public BoundaryConditions getBoundaryConitions() {
         return boundaryConitions;
     }
@@ -123,7 +124,8 @@ public class Task {
     
     
     protected OpenMapRealMatrix arrangeSubMatrix(OpenMapRealMatrix M, double[][] subMatrix, int row, int col){
-        M.setSubMatrix(subMatrix, row, col);
+        int N = subMatrix.length;
+        M.setSubMatrix(subMatrix, row * N, col * N);
         
         return M;
     }
@@ -136,7 +138,8 @@ public class Task {
     
     protected OpenMapRealMatrix buildSystem(Mesh mesh, SysBlockBuilder blockBuilder, int blockSize){
         ArrayList<Element> elems = mesh.getElements();
-        OpenMapRealMatrix K = new OpenMapRealMatrix(blockSize, blockSize);
+        int Nb = mesh.getNodesCount();
+        OpenMapRealMatrix K = new OpenMapRealMatrix(Nb * blockSize, Nb * blockSize);
         for(int i = 0; i < elems.size(); i++){
             Element elem = elems.get(i);
             ArrayList<Integer> nodesList = elem.getNodesList();
@@ -145,8 +148,8 @@ public class Task {
                 for(int m = 0; m < N; m++){
                     int gl = nodesList.get(l);
                     int gm = nodesList.get(m);
-                    RealMatrix blockCell =  blockBuilder.apply(elem, l, m);
-                    K = this.arrangeSubMatrix(K, blockCell.getData(), gm, gl);
+                    OpenMapRealMatrix blockCell =  blockBuilder.apply(elem, l, m);
+                    K = this.arrangeSubMatrix(K, blockCell, gl, gm);
                 }
             }
         }

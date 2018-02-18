@@ -7,6 +7,7 @@ package elemfunc.d1;
 
 import engine.utils.common.TripleFunction;
 import com.sun.jndi.toolkit.ctx.PartialCompositeContext;
+import elemfunc.FuncParams;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;

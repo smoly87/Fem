@@ -28,7 +28,9 @@ public class FemTimeSolver1d extends Task{
     
     protected ElemFunc elemFunc;
     protected Mesh timeMesh ;
-
+    
+    protected OpenMapRealMatrix KB;
+    protected OpenMapRealMatrix CB;
 
     public Mesh getTimeMesh() {
         return timeMesh;
@@ -47,44 +49,28 @@ public class FemTimeSolver1d extends Task{
     public Pair<OpenMapRealMatrix, OpenMapRealVector> buildTimeSystem(
                 OpenMapRealMatrix C, OpenMapRealMatrix K,  OpenMapRealVector Y0,  
                 int tStepsCnt, double tFrom, double tTo){
-        timeMesh = SimpleMeshBuilder.create1dLineMesh(tStepsCnt);
-        ArrayList<Element> elems = timeMesh.getElements();
-        
+        timeMesh = SimpleMeshBuilder.create1dLineMesh(tStepsCnt); 
         int NSp = C.getRowDimension();
         int NG = NSp * (tStepsCnt+1);
         
-        OpenMapRealMatrix KG = new OpenMapRealMatrix(NG, NG);
         OpenMapRealVector FG = new OpenMapRealVector(NG);
         
-        double ht = ( tTo - tFrom)/(tStepsCnt-1);
+        this.KB = K;
+        this.CB = C;
         
-        for(int i = 0; i < elems.size(); i++){
-            double t = ht * i;
-            Element elem = elems.get(i);
-            ArrayList<Integer> nodesList = elem.getNodesList();
-            int N = nodesList.size();
-            for(int l = 0; l < N; l++){
-                for(int m = 0; m < N; m++){
-                    int gl = nodesList.get(l);
-                    int gm = nodesList.get(m);
-                    OpenMapRealMatrix BCell = getSysBlock(C, K, elem, l, m, t);
-                    KG = this.arrangeSubMatrix(KG, BCell, gl, gm);
-                }
-            }
-        }
-        
+        OpenMapRealMatrix KG = buildSystem(timeMesh, this::getSysBlock, NSp);        
         boundaryConitions = getTimeBoundaryConditions(NSp, Y0);
         Pair<OpenMapRealMatrix, OpenMapRealVector> res = applyBoundaryConditions(KG, FG, boundaryConitions);
 
         return res;
     }
     
-    protected OpenMapRealMatrix getSysBlock(OpenMapRealMatrix C, OpenMapRealMatrix K, Element elem, int l, int m, double t){
+    protected OpenMapRealMatrix getSysBlock(Element elem, int l, int m){
         double CKoof =  -elemFunc.integrate(elem, ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
         double KKoof =  elemFunc.integrate(elem, ElemFuncType.F, ElemFuncType.F, l, m);
         
-        OpenMapRealMatrix CLoc = (OpenMapRealMatrix)C.scalarMultiply(CKoof);
-        OpenMapRealMatrix KLoc = (OpenMapRealMatrix)K.scalarMultiply(KKoof);
+        OpenMapRealMatrix CLoc = (OpenMapRealMatrix)CB.scalarMultiply(CKoof);
+        OpenMapRealMatrix KLoc = (OpenMapRealMatrix)KB.scalarMultiply(KKoof);
         
         return CLoc.add(KLoc);
     }

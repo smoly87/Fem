@@ -18,7 +18,7 @@ public class BoundaryConditions {
     protected int dim;
 
     
-    public double[] getBoundValues() {
+    public double[] getBoundNodes() {
         return boundValues;
     }
 

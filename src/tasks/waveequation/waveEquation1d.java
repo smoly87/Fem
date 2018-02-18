@@ -54,7 +54,7 @@ public class waveEquation1d extends Task{
        
         ArrayList<Element> elements = mesh.getElements();
         
-        ElemFunc elemFunc = new LinN();
+        elemFunc = new LinN();
      
       
         for(int i = 0; i < elemNum; i++){
@@ -116,7 +116,7 @@ public class waveEquation1d extends Task{
             res[t + 1] = restoreBoundary(values, boundaryConitions);
         }
         
-        res[0] = timeSolver.getBoundaryConitions().getBoundValues();
+        res[0] = timeSolver.getBoundaryConitions().getBoundNodes();
         
         return res ;
     }
