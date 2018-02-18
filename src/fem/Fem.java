@@ -5,9 +5,11 @@
  */
 package fem;
 
+import engine.PolygonOfExperiments;
 import engine.Task;
 import org.apache.commons.math3.linear.RealVector;
 import tasks.heatEquation1d;
+import tasks.waveequation.waveEquation1d;
 
 /**
  *
@@ -20,9 +22,15 @@ public class Fem {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        heatEquation1d task =new heatEquation1d(10);
-        RealVector X = task.solve();
-        System.out.println(X.toString());
+     /*   heatEquation1d task =new heatEquation1d(10);
+        double[] X = task.solve();
+        System.out.println(X.toString());*/
+       
+       /* waveEquation1d waveTask = new waveEquation1d(10, 100);
+        waveTask.solve();*/
+        
+        PolygonOfExperiments polygon = new PolygonOfExperiments();
+        polygon.testWaveEq();
     }
     
 }

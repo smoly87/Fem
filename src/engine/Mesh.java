@@ -16,13 +16,7 @@ public class Mesh {
     protected ArrayList<Element> elements;
     protected int nodesCount;
 
-    public int getNodesCount() {
-        return nodesCount;
-    }
-
-    public void setNodesCount(int nodesCount) {
-        this.nodesCount = nodesCount;
-    }
+   
 
     public ArrayList<Vector> getPoints() {
         return points;
@@ -32,6 +26,10 @@ public class Mesh {
         return elements;
     }
 
+    public int getNodesCount(){
+        return points.size();
+    }
+    
     public Mesh(ArrayList<Vector> points, ArrayList<Element> elements) {
         this.points = points;
         this.elements = elements;

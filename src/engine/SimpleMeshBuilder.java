@@ -19,7 +19,7 @@ public class SimpleMeshBuilder {
        ArrayList<Vector> points = new ArrayList<>(N);
        ArrayList<Element> elements = new ArrayList<>(elemNum);
                
-       double h = 1/(double)N;
+       double h = 1/(double)(N-1);
        for(int i = 0; i < N; i++){
            points.add(new Vector(new double[]{h*i}));
        }
@@ -35,7 +35,7 @@ public class SimpleMeshBuilder {
        }
        
        Mesh mesh = new Mesh(points, elements);
-       mesh.setNodesCount(N);
+       //mesh.setNodesCount(N);
        
        return mesh;
     }

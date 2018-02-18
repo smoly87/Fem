@@ -3,12 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package engine.utils;
+package engine;
+
+import org.apache.commons.math3.linear.RealMatrix;
 
 /**
  *
  * @author Andrey
  */
-public enum TargetCompareResult {
-    TargetReached, AllTagetsReached, OrdinaryItem
+@FunctionalInterface
+public interface SysBlockBuilder{
+    RealMatrix apply(Element elem, Integer l, Integer m);
 }

@@ -5,9 +5,11 @@
  */
 package engine;
 
-import engine.utils.RealVectorRemoveWalker;
-import engine.utils.SparseMatrixRemoverWalker;
-import engine.utils.RealMatrixWalkType;
+import engine.utils.common.Pair;
+import engine.utils.openmap.RealVectorRemoveWalker;
+import engine.utils.openmap.SparseMatrixRemoverWalker;
+import engine.utils.openmap.RealMatrixWalkType;
+import engine.utils.openmap.SubMatrixArrangeWalker;
 import java.util.ArrayList;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
@@ -24,50 +26,80 @@ import org.apache.commons.math3.linear.SparseRealMatrix;
 public class Task {
     protected OpenMapRealMatrix K;
     protected OpenMapRealVector F;
+    protected Mesh mesh;
+    protected BoundaryConditions boundaryConitions;
+
+    public BoundaryConditions getBoundaryConitions() {
+        return boundaryConitions;
+    }
     
+    public Mesh getMesh() {
+        return mesh;
+    }
+    protected final double MIN_ELEM = 10^-16;
     
     protected void initMatrixes(int N){
         K = new OpenMapRealMatrix(N, N);
         F = new OpenMapRealVector(N);
     }
     
-    protected void removeRowsAndColumnsForBoundConds(ArrayList<Integer> boundIndexes){
-       int N = K.getRowDimension();
-       
-       SparseMatrixRemoverWalker visitorRows = new SparseMatrixRemoverWalker(K, boundIndexes, RealMatrixWalkType.ROWS);
-       K.walkInRowOrder(visitorRows);
-       K = visitorRows.getR();
-       
-       RealVectorRemoveWalker vecWalker = new RealVectorRemoveWalker(F, boundIndexes);
-       F.walkInDefaultOrder(vecWalker);
-       F = vecWalker.getR();
+    protected double[][] scalarMultiply(double[][] arr, double d){
+        for(int i = 0; i < arr.length; i++){
+            for(int j = 0; j < arr[i].length; j++){
+                arr[i][j] = d * arr[i][j]; 
+            }
+        }
+        return arr;
     }
     
-    protected void applyBoundaryConditions(ArrayList<Integer> boundIndexes, double[] boundValues){
-        int N = K.getRowDimension();
-        for(int k = 0; k < boundIndexes.size(); k++){
-            int i = boundIndexes.get(k);
-            double Qbound = boundValues[k];
+    protected OpenMapRealMatrix removeElemsForBoundConds(OpenMapRealMatrix K, BoundaryConditions boundaryConditions){       
+       SparseMatrixRemoverWalker visitorRows = new SparseMatrixRemoverWalker(K, boundaryConditions.getBoundIndexes(), RealMatrixWalkType.ROWS);
+       K.walkInRowOrder(visitorRows);
+       return visitorRows.getR();
+   
+    }
+    
+    protected OpenMapRealVector removeElemsForBoundConds(OpenMapRealVector F, BoundaryConditions boundaryConditions){
+       RealVectorRemoveWalker vecWalker = new RealVectorRemoveWalker(F, boundaryConditions.getBoundIndexes());
+       F.walkInDefaultOrder(vecWalker);
+       return vecWalker.getR();
+    }
+    
+    
+    /*protected void applyBoundNode(OpenMapRealMatrix KG, OpenMapRealVector FG, int i, int j, Vector v){
+          for(int k = 0; k < v.)
+         
+    }*/
+
+    
+    protected Pair<OpenMapRealMatrix, OpenMapRealVector> applyBoundaryConditions(OpenMapRealMatrix KG, OpenMapRealVector FG, BoundaryConditions boundaryConditions){
+       
+        int N = KG.getRowDimension();
+        for(int k = 0; k < boundaryConditions.getNodesCount(); k++){
+            int i = boundaryConditions.getPointIndex(k);
+            double Qbound = boundaryConditions.getBoundaryValue1d(k);
             for(int j=0; j < N; j++){
                 if(j != i){
-                     F.addToEntry(j, - K.getEntry(j, i) * Qbound);
-                     K.setEntry(j, i, 0);
+                     FG.addToEntry(j, -KG.getEntry(j, i) * Qbound);
+                     KG.setEntry(j, i, 0);
                 }
                
             }
        }
-       this.removeRowsAndColumnsForBoundConds(boundIndexes);
-       
+        
+       KG = this.removeElemsForBoundConds(KG, boundaryConditions);
+       FG = this.removeElemsForBoundConds(FG, boundaryConditions);
+       return new Pair<>(KG, FG);
     }
     
-    protected double[][] fillStiffnessMatrix(Element elem, ElemFunc elemFunc, ElemFuncType type1, ElemFuncType type2, double minV, double maxV){
+    protected double[][] fillStiffnessMatrix(Element elem, ElemFunc elemFunc, ElemFuncType type1, ElemFuncType type2){
       int N = elem.nodesList.size();
     
       double[][] KLoc = new double[N][N];
       for(int k = 0; k < N;k++){
          int c = k;
          for(int r = 0; r < N-k;r++){
-            KLoc[r][c] = elemFunc.integrate(elem, type1, type2, r, c, minV, maxV);
+            KLoc[r][c] = elemFunc.integrate(elem, type1, type2, r, c);
             KLoc[c][r] = KLoc[r][c]; 
             c++;
          } 
@@ -76,19 +108,97 @@ public class Task {
       return KLoc;
     }
     
-    protected void arrangeInGlobalStiffness(double[][] KLoc, ArrayList<Integer> numsList){
+    protected OpenMapRealMatrix arrangeInGlobalStiffness(OpenMapRealMatrix M, double[][] KLoc, ArrayList<Integer> numsList){
         int N = numsList.size();
         for(int l = 0; l < N; l++){
             for(int m = 0; m < N; m++){
                 int i = numsList.get(l);
-                int j = numsList.get(m);
-                K.addToEntry(i, j, KLoc[l][m]);
+                int j = numsList.get(m);  
+                   M.addToEntry(i, j, KLoc[l][m]);
             }
         }
+        
+        return M;
     }
     
     
-    protected void arrangeSubMatrix(double[][] subMatrix, int row, int col){
-        K.setSubMatrix(subMatrix, row, col);
+    protected OpenMapRealMatrix arrangeSubMatrix(OpenMapRealMatrix M, double[][] subMatrix, int row, int col){
+        M.setSubMatrix(subMatrix, row, col);
+        
+        return M;
+    }
+    protected OpenMapRealMatrix arrangeSubMatrix(OpenMapRealMatrix M, OpenMapRealMatrix subMatrix, int row, int col){
+        int N = subMatrix.getRowDimension();
+        SubMatrixArrangeWalker walker = new SubMatrixArrangeWalker(M, row * N, col *N);
+        subMatrix.walkInOptimizedOrder(walker);
+        return M;
+    }
+    
+    protected OpenMapRealMatrix buildSystem(Mesh mesh, SysBlockBuilder blockBuilder, int blockSize){
+        ArrayList<Element> elems = mesh.getElements();
+        OpenMapRealMatrix K = new OpenMapRealMatrix(blockSize, blockSize);
+        for(int i = 0; i < elems.size(); i++){
+            Element elem = elems.get(i);
+            ArrayList<Integer> nodesList = elem.getNodesList();
+            int N = nodesList.size();
+            for(int l = 0; l < N; l++){
+                for(int m = 0; m < N; m++){
+                    int gl = nodesList.get(l);
+                    int gm = nodesList.get(m);
+                    RealMatrix blockCell =  blockBuilder.apply(elem, l, m);
+                    K = this.arrangeSubMatrix(K, blockCell.getData(), gm, gl);
+                }
+            }
+        }
+        return K;
+    }
+    
+    protected OpenMapRealMatrix assembleBlockDiag(int N,  int Tsteps,  RealMatrix firstRowMatr, RealMatrix rowMatr, RealMatrix lastRowMatr){
+        int gs = N * Tsteps;
+        OpenMapRealMatrix G = new OpenMapRealMatrix(gs, gs);
+       
+        for(int r = 0; r < Tsteps; r++ ){ 
+            
+            RealMatrix cRow = null;
+            int rFrom = r * N;
+            int colFrom = r < 2 ? 0 : r * N;
+             
+            if( r == 0){
+                cRow = firstRowMatr;
+            } else if (r == Tsteps - 1){
+                cRow = lastRowMatr;
+            } else{
+                cRow = rowMatr;
+            }
+ 
+            G.setSubMatrix(cRow.getData(), rFrom, colFrom);
+        }
+        
+        return G;
+    }
+    
+    public double[] restoreBoundary(double[]X,  BoundaryConditions boundaryConditions){
+        int BN = boundaryConditions.getNodesCount();
+        int N = X.length + BN;
+        double[] R = new double[N];
+        int l = 0;
+        int pointInd = boundaryConditions.getPointIndex(0);
+        // From zero to first bound point
+        System.arraycopy(X, 0, R, 0, pointInd);
+        l = pointInd;
+        for(int k = 0; k < BN - 1; k++){
+            pointInd = boundaryConditions.getPointIndex(k);
+            R[l] = boundaryConditions.getBoundaryValue1d(k);
+            int partLen = boundaryConditions.getPointIndex(k + 1) - pointInd - 1;
+            System.arraycopy(X, l , R, pointInd+1,  partLen);
+            l += partLen;
+        }
+        
+       // Part from last index to end of X also should be considered.
+        pointInd = boundaryConditions.getPointIndex(BN - 1);
+        R[pointInd] = boundaryConditions.getBoundaryValue1d(BN - 1);
+        System.arraycopy(X, l, R, pointInd+1, N - 1 - pointInd);
+        
+        return R;
     }
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package engine.utils;
+package engine.utils.openmap;
 
 import java.util.ArrayList;
 
@@ -29,10 +29,12 @@ public class TargetStatus {
             
             statusChanged = true;
             if(targetInd == boundIndexes.size() - 1){
+                offset = boundIndexes.size()-1;
                 return TargetCompareResult.AllTagetsReached;
             } else{
                targetInd++;
                targetValue = boundIndexes.get(targetInd);
+               offset = targetInd - 1;
             }
             return TargetCompareResult.TargetReached;
         } else{
@@ -52,5 +54,6 @@ public class TargetStatus {
         targetValue = boundIndexes.get(0);
         targetInd = 0;
         offset = 0;
+        statusChanged = false;
     }
 }

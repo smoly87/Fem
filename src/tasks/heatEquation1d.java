@@ -7,16 +7,20 @@ package tasks;
 
 import elemfunc.d1.Element1d;
 import elemfunc.d1.LinN;
+import engine.BoundaryConditions;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;
 import engine.Mesh;
 import engine.SimpleMeshBuilder;
 import engine.Task;
+import engine.utils.common.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.OpenMapRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
 /**
@@ -29,6 +33,8 @@ public class heatEquation1d extends Task{
     public heatEquation1d(int elemNum) {
         this.elemNum = elemNum;
     }
+ 
+    
     
     protected void init() {
         
@@ -36,29 +42,32 @@ public class heatEquation1d extends Task{
         ArrayList<Element> elements = mesh.getElements();
         
         ElemFunc elemFunc = new LinN();
-        double h = 1/(double)mesh.getNodesCount();
         
         this.initMatrixes(mesh.getNodesCount());
         
         for(int i = 0; i < elemNum; i++){
             Element elem = elements.get(i);
-            double[][] KLoc = this.fillStiffnessMatrix(elem, elemFunc, ElemFuncType.dFdx, ElemFuncType.dFdx, 0, h);
-            this.arrangeInGlobalStiffness(KLoc, elem.getNodesList());
+            double[][] KLoc = this.fillStiffnessMatrix(elem, elemFunc, ElemFuncType.dFdx, ElemFuncType.dFdx);
+            
+            K = this.arrangeInGlobalStiffness(K, KLoc, elem.getNodesList());
         }
         
         double[] QBound = new double[]{100, 200};
         Integer[] boundNodes = new Integer[]{0, mesh.getNodesCount()-1};
-        ArrayList<Integer> boundIndexes = new ArrayList<>(Arrays.asList(boundNodes));
+        boundaryConitions = new BoundaryConditions(QBound, boundNodes);
         
-        this.applyBoundaryConditions(boundIndexes, QBound);
+        Pair<OpenMapRealMatrix, OpenMapRealVector> res = this.applyBoundaryConditions(K, F, boundaryConitions);
+        this.K = res.getV1();
+        this.F = res.getV2();
        
          
     }
     
-    public RealVector solve(){
+    public double[] solve(){
         init();
         DecompositionSolver solver = new LUDecomposition(K).getSolver();
-        RealVector X = solver.solve(F); 
-        return X;
+        RealVector X = solver.solve(F);
+        double[] R = restoreBoundary(X.toArray(), boundaryConitions);
+        return R;
     }
 }

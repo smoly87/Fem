@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package engine.utils;
+package engine.utils.openmap;
 
 import java.util.ArrayList;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
@@ -25,6 +25,7 @@ public class SparseMatrixRemoverWalker implements RealMatrixPreservingVisitor{
     protected TargetStatus rowTargetStatus;
     protected TargetStatus colTargetStatus;
     
+    protected int curRow;
        
     public OpenMapRealMatrix getR() {
         return R;
@@ -59,19 +60,23 @@ public class SparseMatrixRemoverWalker implements RealMatrixPreservingVisitor{
     }
 
     @Override
-    public void visit(int row, int column, double value) {  
+    public void visit(int row, int column, double value) { 
+        if(row != curRow){
+            colTargetStatus.reset();
+        }
         TargetCompareResult colResult = colTargetStatus.compare(column);      
         if(rowTargetStatus.compare(row) == TargetCompareResult.OrdinaryItem){
             switch(colResult){
                 case OrdinaryItem:
                     R.setEntry(row - rowTargetStatus.getOffset(), column - colTargetStatus.getOffset(), value);
                     break;
-                case AllTagetsReached:
+               /* case AllTagetsReached:
                     colTargetStatus.reset();
-                    break;
+                    break;*/
             }
             
-        }       
+        }   
+        curRow = row;
     }
 
     @Override

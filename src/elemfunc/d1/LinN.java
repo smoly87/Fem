@@ -5,6 +5,7 @@
  */
 package elemfunc.d1;
 
+import engine.utils.common.TripleFunction;
 import com.sun.jndi.toolkit.ctx.PartialCompositeContext;
 import engine.ElemFunc;
 import engine.ElemFuncType;
@@ -78,15 +79,24 @@ public class LinN extends ElemFunc implements UnivariateFunction{
     protected TripleFunction<double[], Integer,Element, Double> getFuncRef(ElemFuncType type){
         TripleFunction<double[], Integer,Element, Double>  res = null;
         switch(type){
-            
+            case F:
+                res = this::F;
+                break;
             case dFdx:
                 res = this::dFdx;
+                
         }
         return res;
     }
     
     @Override
-    public double integrate(Element elem, ElemFuncType type1, ElemFuncType type2,int l, int m, double minV, double maxV) {
+    public double integrate(Element elem, ElemFuncType type1, ElemFuncType type2,int l, int m ) {
+         Element1d curElem = (Element1d)elem;
+         
+         double minV = 0;
+         double maxV = curElem.getH();
+         double J = 1;        
+                 
          f1 = getFuncRef(type1);
          f2 = getFuncRef(type2);
                 
@@ -95,7 +105,7 @@ public class LinN extends ElemFunc implements UnivariateFunction{
          funcParams.setFuncNum2(m);
          
          SimpsonIntegrator integrator = new SimpsonIntegrator();
-         return integrator.integrate(10, this, minV, maxV);         
+         return J * integrator.integrate(20, this, minV, maxV);         
     }
 
     protected double applyFuncCall(TripleFunction f, int argNum, double x){

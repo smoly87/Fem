@@ -16,7 +16,7 @@ public abstract class ElemFunc {
    public abstract double dF(double[] c, int funcNum,  Element elem);
    public abstract double dFdx(double[] c, int funcNum,  Element elem);
    
-   public abstract double integrate(Element elem, ElemFuncType type1, ElemFuncType type2,int l, int m, double minV, double maxV);
+   public abstract double integrate(Element elem, ElemFuncType type1, ElemFuncType type2,int l, int m);
         
    
 }
