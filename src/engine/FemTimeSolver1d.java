@@ -6,6 +6,7 @@
 package engine;
 
 import elemfunc.d1.LinN;
+import elemfunc.d1.LinNBuilder;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;
@@ -16,6 +17,7 @@ import engine.utils.common.MathUtils;
 import engine.utils.common.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.OpenMapRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -25,8 +27,7 @@ import org.apache.commons.math3.linear.RealMatrix;
  * @author Andrey
  */
 public class FemTimeSolver1d extends Task{
-    
-    protected ElemFunc elemFunc;
+
     protected Mesh timeMesh ;
     
     protected OpenMapRealMatrix KB;
@@ -38,10 +39,11 @@ public class FemTimeSolver1d extends Task{
 
     
     public FemTimeSolver1d() {
-        elemFunc = new LinN();
+       
     }
     
     protected BoundaryConditions getTimeBoundaryConditions(int NSp, OpenMapRealVector Y0){
+        
         Integer[] timeBoundIndexes = MathUtils.linSpace(NSp);
         return new BoundaryConditions(Y0.toArray(), timeBoundIndexes);
     }
@@ -50,6 +52,8 @@ public class FemTimeSolver1d extends Task{
                 OpenMapRealMatrix C, OpenMapRealMatrix K,  OpenMapRealVector Y0,  
                 int tStepsCnt, double tFrom, double tTo){
         timeMesh = SimpleMeshBuilder.create1dLineMesh(tStepsCnt); 
+        timeMesh.applyElemFunc(new LinNBuilder());
+        
         int NSp = C.getRowDimension();
         int NG = NSp * (tStepsCnt+1);
         
@@ -66,8 +70,9 @@ public class FemTimeSolver1d extends Task{
     }
     
     protected OpenMapRealMatrix getSysBlock(Element elem, int l, int m){
-        double CKoof =  -elemFunc.integrate(elem, ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
-        double KKoof =  elemFunc.integrate(elem, ElemFuncType.F, ElemFuncType.F, l, m);
+        ElemFunc elemFunc = elem.getElemFunc();
+        double CKoof =  -elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
+        double KKoof =  elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, l, m);
         
         OpenMapRealMatrix CLoc = (OpenMapRealMatrix)CB.scalarMultiply(CKoof);
         OpenMapRealMatrix KLoc = (OpenMapRealMatrix)KB.scalarMultiply(KKoof);

@@ -5,6 +5,7 @@
  */
 package engine;
 
+import engine.meshloader.MeshLoaderGmsh;
 import engine.utils.common.MathUtils;
 import tasks.waveequation.ReferenceWaveSolution;
 import tasks.waveequation.SolutionPrecisionTester;
@@ -26,6 +27,18 @@ public class PolygonOfExperiments {
         return XRef;
     }
     
+    
+    public void test(){
+        //loadMesh();
+        testWaveEq();
+    }
+    
+    public void loadMesh(){
+        MeshLoaderGmsh meshLoader = new MeshLoaderGmsh(false);
+        Mesh mesh = meshLoader.loadMesh("/assets/test.msh");
+        System.out.println(mesh.getNodesCount());
+    }
+    
     public void testWaveEq(){
         
         int spatElems= 10;
@@ -33,7 +46,10 @@ public class PolygonOfExperiments {
         
         waveEquation1d waveTask = new waveEquation1d(spatElems, timeElems);
         
+        long ms = System.nanoTime();
         double[][] X = waveTask.solve();
+        System.out.println((System.nanoTime() - ms)/1000000000.0);
+        
         double[][] XRef = getRefereneSolution(spatElems, timeElems);
         
         double eps = SolutionPrecisionTester.getEnergyCriteriaPrecision(X, XRef, true);

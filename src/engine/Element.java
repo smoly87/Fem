@@ -13,6 +13,15 @@ import java.util.ArrayList;
  */
 public class Element {
     protected ArrayList<Integer> nodesList;
+    protected ElemFunc elemFunc;
+
+    public void setElemFunc(ElemFunc elemFunc) {
+        this.elemFunc = elemFunc;
+    }
+
+    public ElemFunc getElemFunc() {
+        return elemFunc;
+    }
 
     public ArrayList<Integer> getNodesList() {
         return nodesList;
@@ -23,12 +32,10 @@ public class Element {
         return mesh;
     }
 
-    public void setMesh(Mesh mesh) {
-        this.mesh = mesh;
-    }
-
-    public Element(ArrayList<Integer> nodesList) {
+   
+    public Element(Mesh mesh, ArrayList<Integer> nodesList) {
         this.nodesList = nodesList;
+        this.mesh = mesh;
     }
      
 }

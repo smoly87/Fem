@@ -7,6 +7,7 @@ package tasks.waveequation;
 
 import elemfunc.d1.Element1d;
 import elemfunc.d1.LinN;
+import elemfunc.d1.LinNBuilder;
 import engine.BoundaryConditions;
 import engine.ElemFunc;
 import engine.ElemFuncType;
@@ -28,6 +29,11 @@ import org.apache.commons.math3.linear.RealVector;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.PI;
+import org.apache.commons.math3.linear.CholeskyDecomposition;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.QRDecomposition;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
 /**
  *
  * @author Andrey
@@ -42,32 +48,28 @@ public class waveEquation1d extends Task{
     public waveEquation1d(int elemNum, int timeSteps) {
         this.elemNum = elemNum;
         this.timeSteps = timeSteps;
+
     }
 
     @Override
     protected void initMatrixes(int N) {
         super.initMatrixes(N); //To change body of generated methods, choose Tools | Templates.
-         C = new OpenMapRealMatrix(N, N);
+        C = new OpenMapRealMatrix(N, N);
     }
     
     protected void fillMatrixes(){
-       
-        ArrayList<Element> elements = mesh.getElements();
-        
-        elemFunc = new LinN();
-     
-      
-        for(int i = 0; i < elemNum; i++){
-            Element elem = elements.get(i);
-            
-            double[][] CLoc = this.fillStiffnessMatrix(elem, elemFunc, ElemFuncType.F, ElemFuncType.F);
-            C = this.arrangeInGlobalStiffness(C, CLoc, elem.getNodesList());
-            
-            double[][] KLoc = this.fillStiffnessMatrix(elem, elemFunc, ElemFuncType.dFdx, ElemFuncType.dFdx);
-            K = this.arrangeInGlobalStiffness(K, KLoc, elem.getNodesList());
-        }
+        K = fillGlobalStiffness(K, this::Klm);
+        C = fillGlobalStiffness(C, this::Clm);
     }
     
+    protected double Clm(Element elem, Integer l, Integer m){
+        return elem.getElemFunc().integrate(ElemFuncType.F, ElemFuncType.F, l, m);
+    }
+    
+    protected double Klm(Element elem, Integer l, Integer m){
+        return elem.getElemFunc().integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
+    }
+     
     protected void applySpatialBoundaryConditions(){
         double[] QBound = new double[]{0, 0};
         Integer[] boundNodes = new Integer[]{0, mesh.getNodesCount()-1};
@@ -99,28 +101,14 @@ public class waveEquation1d extends Task{
     protected void init() {
         
         mesh = SimpleMeshBuilder.create1dLineMesh(elemNum);
+        mesh.applyElemFunc(new LinNBuilder());
         this.initMatrixes(mesh.getNodesCount());
         
         fillMatrixes();
         applySpatialBoundaryConditions();
          
     }
-    
-    protected double[][] convertSolution(RealVector X, int timeSteps ){
-        double [] data = X.toArray();
-        int N = data.length / timeSteps;
-        double[][] res = new double[timeSteps + 1][N + boundaryConitions.getNodesCount()];
-        for(int t = 0; t < timeSteps; t++){
-            double[] values = new double[N];
-            System.arraycopy(data, t * N, values, 0, N);
-            res[t + 1] = restoreBoundary(values, boundaryConitions);
-        }
-        
-        res[0] = timeSolver.getBoundaryConitions().getBoundNodes();
-        
-        return res ;
-    }
-    
+
     public double[][] solve(){
         init();
                        
@@ -129,11 +117,12 @@ public class waveEquation1d extends Task{
         Pair<OpenMapRealMatrix, OpenMapRealVector> Gmatrixes = timeSolver.buildTimeSystem(C, K, Y0, timeSteps, 0, 1);
         OpenMapRealMatrix M = Gmatrixes.getV1();
         
-        DecompositionSolver solver = new LUDecomposition(Gmatrixes.getV1()).getSolver();
+       // DecompositionSolver solver = new LUDecomposition(Gmatrixes.getV1()).getSolver();
+        DecompositionSolver solver =new QRDecomposition(Gmatrixes.getV1()).getSolver();
         //boolean T  = solver.isNonSingular();
-                
+       // NewtonRaphsonSolver newtSolver = new NewtonRaphsonSolver();
         RealVector X = solver.solve(Gmatrixes.getV2()); 
         
-        return convertSolution(X, timeSteps);
+        return convertSolution(X, timeSolver, timeSteps);
     }
 }

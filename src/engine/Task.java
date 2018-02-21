@@ -17,6 +17,7 @@ import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.OpenMapRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealMatrixChangingVisitor;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SparseFieldMatrix;
 import org.apache.commons.math3.linear.SparseRealMatrix;
 
@@ -29,7 +30,7 @@ public class Task {
     protected OpenMapRealVector F;
     protected Mesh mesh;
     protected BoundaryConditions boundaryConitions;
-    protected ElemFunc elemFunc ;
+ 
     public BoundaryConditions getBoundaryConitions() {
         return boundaryConitions;
     }
@@ -81,6 +82,7 @@ public class Task {
             double Qbound = boundaryConditions.getBoundaryValue1d(k);
             for(int j=0; j < N; j++){
                 if(j != i){
+                     //TODO: Add source value to F
                      FG.addToEntry(j, -KG.getEntry(j, i) * Qbound);
                      KG.setEntry(j, i, 0);
                 }
@@ -93,14 +95,14 @@ public class Task {
        return new Pair<>(KG, FG);
     }
     
-    protected double[][] fillStiffnessMatrix(Element elem, ElemFunc elemFunc, ElemFuncType type1, ElemFuncType type2){
+    protected double[][] fillStiffnessMatrix(Element elem, KlmFunction KLMFunc){
       int N = elem.nodesList.size();
     
       double[][] KLoc = new double[N][N];
       for(int k = 0; k < N;k++){
          int c = k;
          for(int r = 0; r < N-k;r++){
-            KLoc[r][c] = elemFunc.integrate(elem, type1, type2, r, c);
+            KLoc[r][c] = KLMFunc.apply(elem, r, c);//elem.getElemFunc().integrate( type1, type2, r, c);
             KLoc[c][r] = KLoc[r][c]; 
             c++;
          } 
@@ -204,4 +206,31 @@ public class Task {
         
         return R;
     }
+    
+     protected double[][] convertSolution(RealVector X, FemTimeSolver1d timeSolver, int timeSteps ){
+        double [] data = X.toArray();
+        int N = data.length / timeSteps;
+        double[][] res = new double[timeSteps + 1][N + boundaryConitions.getNodesCount()];
+        for(int t = 0; t < timeSteps; t++){
+            double[] values = new double[N];
+            System.arraycopy(data, t * N, values, 0, N);
+            res[t + 1] = restoreBoundary(values, boundaryConitions);
+        }
+        
+        res[0] = timeSolver.getBoundaryConitions().getBoundNodes();
+        
+        return res ;
+    }
+     
+    protected OpenMapRealMatrix fillGlobalStiffness(OpenMapRealMatrix M, KlmFunction klmFunc) {
+        ArrayList<Element> elements = mesh.getElements();
+        for (int i = 0; i < elements.size(); i++) {
+            Element elem = elements.get(i);
+
+            double[][] MLoc = fillStiffnessMatrix(elem, klmFunc);
+            M = this.arrangeInGlobalStiffness(M, MLoc, elem.getNodesList());
+        }
+        
+        return M;
+    } 
 }

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class Mesh {
     protected ArrayList<Vector> points;
     protected ArrayList<Element> elements;
-    protected int nodesCount;
+
 
    
 
@@ -30,9 +30,19 @@ public class Mesh {
         return points.size();
     }
     
-    public Mesh(ArrayList<Vector> points, ArrayList<Element> elements) {
+    public Mesh(ArrayList<Vector> points) {
         this.points = points;
-        this.elements = elements;
+        this.elements = new ArrayList<>();
 
+    }
+    
+    public void applyElemFunc(ElemFuncBuilder funcBuilder){
+        for(Element elem : elements){
+            elem.setElemFunc(funcBuilder.build(elem));
+        }
+    }
+    
+    public void addElement(Element elem){
+        elements.add(elem);
     }
 }

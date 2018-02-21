@@ -14,6 +14,7 @@ import java.util.Arrays;
  */
 public class BoundaryConditions {
     protected double[] boundValues;
+    protected double[] qValues;
     protected ArrayList<Integer> boundIndexes;
     protected int dim;
 

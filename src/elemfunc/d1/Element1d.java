@@ -16,9 +16,12 @@ import java.util.ArrayList;
 public class Element1d extends Element{
     protected double h;
 
-    public Element1d(ArrayList<Integer> nodesList,  double h) {
-        super(nodesList);
-        this.h = h;
+    public Element1d(Mesh mesh, ArrayList<Integer> nodesList) {
+        super(mesh, nodesList);
+        double[] p1 = mesh.getPoints().get(nodesList.get(0)).getCoordinates();
+        double[] p2 = mesh.getPoints().get(nodesList.get(1)).getCoordinates();
+        
+        this.h = p2[0] - p1[0];
     }
 
     public double getH() {

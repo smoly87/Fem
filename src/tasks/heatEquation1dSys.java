@@ -43,8 +43,7 @@ public class heatEquation1dSys extends Task{
         
         mesh = SimpleMeshBuilder.create1dLineMesh(elemNum);
         ArrayList<Element> elements = mesh.getElements();
-        
-        ElemFunc elemFunc = new LinN();
+
         int N = mesh.getNodesCount();
        
         K = buildSystem(mesh, this::getSysBlock, BLOCK_SIZE);

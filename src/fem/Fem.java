@@ -30,7 +30,7 @@ public class Fem {
         waveTask.solve();*/
         
         PolygonOfExperiments polygon = new PolygonOfExperiments();
-        polygon.testWaveEq();
+        polygon.test();
     }
     
 }

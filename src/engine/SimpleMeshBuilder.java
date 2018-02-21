@@ -24,17 +24,19 @@ public class SimpleMeshBuilder {
            points.add(new Vector(new double[]{h*i}));
        }
        
+       Mesh mesh = new Mesh(points);
+       
        for(int i = 0; i < elemNum; i++){
            ArrayList<Integer> nodesList = new ArrayList<>(2);
            
            nodesList.add(i);
            nodesList.add(i + 1);
            
-           Element el = new Element1d(nodesList, h);
-           elements.add(el);
+           Element el = new Element1d(mesh, nodesList);
+           mesh.addElement(el);
        }
        
-       Mesh mesh = new Mesh(points, elements);
+      
        //mesh.setNodesCount(N);
        
        return mesh;

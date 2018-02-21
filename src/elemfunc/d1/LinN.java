@@ -24,17 +24,15 @@ import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
 public class LinN extends ElemFunc implements UnivariateFunction{
     protected int elemNum;
    
-    protected FuncParams funcParams;
-    
-    protected TripleFunction<double[], Integer,Element, Double> f1;
-    protected TripleFunction<double[], Integer,Element, Double> f2;
+  
 
-    public LinN() {
+    public LinN(Element elem) {
+        super(elem);
         funcParams = new FuncParams();
     }
     
     @Override
-    public double F(double[] c, int funcNum, Element elem) {
+    public double F(double[] c, int funcNum) {
         double res = 0;
         double x = c[0];
         Element1d elem1d = (Element1d)elem;
@@ -53,12 +51,7 @@ public class LinN extends ElemFunc implements UnivariateFunction{
     }
 
     @Override
-    public double dF(double[] c, int funcNum,  Element elem) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public double dFdx(double[] c, int funcNum,  Element elem) {
+    public double dFdx(double[] c, int funcNum) {
         double res = 0;
         double x = c[0];
         Element1d elem1d = (Element1d)elem;
@@ -76,42 +69,24 @@ public class LinN extends ElemFunc implements UnivariateFunction{
         return res;
     }
 
-     
-    protected TripleFunction<double[], Integer,Element, Double> getFuncRef(ElemFuncType type){
-        TripleFunction<double[], Integer,Element, Double>  res = null;
-        switch(type){
-            case F:
-                res = this::F;
-                break;
-            case dFdx:
-                res = this::dFdx;
-                
-        }
-        return res;
-    }
-    
+
     @Override
-    public double integrate(Element elem, ElemFuncType type1, ElemFuncType type2,int l, int m ) {
+    public double integrate( ElemFuncType type1, ElemFuncType type2,int l, int m ) {
          Element1d curElem = (Element1d)elem;
          
          double minV = 0;
          double maxV = curElem.getH();
          double J = 1;        
-                 
-         f1 = getFuncRef(type1);
-         f2 = getFuncRef(type2);
-                
-         funcParams.setCurElem(elem);
-         funcParams.setFuncNum1(l);
-         funcParams.setFuncNum2(m);
          
+         setCurElemParams(elem, type1, type2, l, m);
+      
          SimpsonIntegrator integrator = new SimpsonIntegrator();
          return J * integrator.integrate(20, this, minV, maxV);         
     }
 
-    protected double applyFuncCall(TripleFunction f, int argNum, double x){
+    protected double applyFuncCall(BiFunction f, int argNum, double x){
         int funcNum = argNum == 0 ? funcParams.getFuncNum1() : funcParams.getFuncNum2();
-        return (double) f.apply(new double[]{x}, funcNum, funcParams.getCurElem());
+        return (double) f.apply(new double[]{x}, funcNum);
     }
     
     @Override

@@ -40,9 +40,7 @@ public class heatEquation1d extends Task{
         
         mesh = SimpleMeshBuilder.create1dLineMesh(elemNum);
         ArrayList<Element> elements = mesh.getElements();
-        
-        elemFunc = new LinN();
-        
+         
         this.initMatrixes(mesh.getNodesCount());
         
         for(int i = 0; i < elemNum; i++){
