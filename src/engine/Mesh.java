@@ -14,7 +14,15 @@ import java.util.ArrayList;
 public class Mesh {
     protected ArrayList<Vector> points;
     protected ArrayList<Element> elements;
+    protected ArrayList<Integer> convHullInd;
 
+    public ArrayList<Integer> getConvHullInd() {
+        return convHullInd;
+    }
+
+    public void setConvHullInd(ArrayList<Integer> convHullInd) {
+        this.convHullInd = convHullInd;
+    }
 
    
 

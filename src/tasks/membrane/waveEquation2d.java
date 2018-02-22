@@ -3,11 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tasks.waveequation;
+package tasks.membrane;
 
+import tasks.waveequation.*;
 import elemfunc.d1.Element1d;
 import elemfunc.d1.LinN;
 import elemfunc.d1.LinNBuilder;
+import elemfunc.d2.LinUniformTriangleBuilder;
 import engine.BoundaryConditions;
 import engine.ElemFunc;
 import engine.ElemFuncType;
@@ -17,6 +19,7 @@ import engine.Mesh;
 import engine.SimpleMeshBuilder;
 import engine.Task;
 import engine.Vector;
+import engine.meshloader.MeshLoaderGmsh;
 import engine.utils.common.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,14 +41,14 @@ import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
  *
  * @author Andrey
  */
-public class waveEquation1d extends Task{
+public class waveEquation2d extends Task{
     protected int elemNum;
     protected int timeSteps;
     
     protected OpenMapRealMatrix C;
     protected FemTimeSolver1d timeSolver; 
     
-    public waveEquation1d(int elemNum, int timeSteps) {
+    public waveEquation2d(int elemNum, int timeSteps) {
         this.elemNum = elemNum;
         this.timeSteps = timeSteps;
 
@@ -67,13 +70,14 @@ public class waveEquation1d extends Task{
     }
     
     protected double Klm(Element elem, Integer l, Integer m){
-        return elem.getElemFunc().integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
+        return elem.getElemFunc().integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m) + 
+               elem.getElemFunc().integrate(ElemFuncType.dFdy, ElemFuncType.dFdy, l, m);
     }
      
     protected void applySpatialBoundaryConditions(){
-        double[] QBound = new double[]{0, 0};
-        Integer[] boundNodes = new Integer[]{0, mesh.getNodesCount()-1};
-        boundaryConitions = new BoundaryConditions(QBound, boundNodes);
+        ArrayList<Integer> boundInd = mesh.getConvHullInd();
+        double[] QBound = new double[boundInd.size()];
+        boundaryConitions = new BoundaryConditions(QBound, boundInd);
      
         Pair<OpenMapRealMatrix, OpenMapRealVector> res = this.applyBoundaryConditions(K, F, boundaryConitions);
         
@@ -90,9 +94,10 @@ public class waveEquation1d extends Task{
         for(int i = 0; i < N; i++){
             Vector point = points.get(i);
             double x = point.getCoordinates()[0];
+            double y = point.getCoordinates()[1];
             
-            values[i] = sin(x * PI);
-            //System.out.println(values[i]);
+            values[i] = sin(x * PI)*sin(y * PI);
+            
         }
         
         return new OpenMapRealVector(values);
@@ -100,8 +105,10 @@ public class waveEquation1d extends Task{
     
     protected void init() {
         
-        mesh = SimpleMeshBuilder.create1dLineMesh(elemNum);
-        mesh.applyElemFunc(new LinNBuilder());
+        MeshLoaderGmsh gmshLoader = new MeshLoaderGmsh(false);
+        mesh = gmshLoader.loadMesh("/assets/test.msh");
+        mesh.applyElemFunc(new LinUniformTriangleBuilder());
+        
         this.initMatrixes(mesh.getNodesCount());
         
         fillMatrixes();
@@ -114,17 +121,15 @@ public class waveEquation1d extends Task{
                        
         timeSolver = new FemTimeSolver1d();
         OpenMapRealVector Y0 = getInitialConditions(mesh.getPoints());
-        Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
         Pair<OpenMapRealMatrix, OpenMapRealVector> Gmatrixes = timeSolver.buildTimeSystem(C, K, Y0, timeSteps, 0, 1);
         OpenMapRealMatrix M = Gmatrixes.getV1();
-         OpenMapRealVector MF = Gmatrixes.getV2();
+        
        // DecompositionSolver solver = new LUDecomposition(Gmatrixes.getV1()).getSolver();
         DecompositionSolver solver =new QRDecomposition(Gmatrixes.getV1()).getSolver();
         //boolean T  = solver.isNonSingular();
        // NewtonRaphsonSolver newtSolver = new NewtonRaphsonSolver();
         RealVector X = solver.solve(Gmatrixes.getV2()); 
         
-        double[][] res = convertSolution(X, timeSolver, timeSteps);
-        return res;
+        return convertSolution(X, timeSolver, timeSteps);
     }
 }

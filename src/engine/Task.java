@@ -209,15 +209,17 @@ public class Task {
     
      protected double[][] convertSolution(RealVector X, FemTimeSolver1d timeSolver, int timeSteps ){
         double [] data = X.toArray();
-        int N = data.length / timeSteps;
-        double[][] res = new double[timeSteps + 1][N + boundaryConitions.getNodesCount()];
+        int BN = boundaryConitions.getNodesCount();
+        int N = data.length / timeSteps  ;
+        double[][] res = new double[timeSteps + 1][N + BN];
         for(int t = 0; t < timeSteps; t++){
             double[] values = new double[N];
             System.arraycopy(data, t * N, values, 0, N);
-            res[t + 1] = restoreBoundary(values, boundaryConitions);
+            values = restoreBoundary(values, boundaryConitions); 
+            res[t + 1] = values;
         }
         
-        res[0] = timeSolver.getBoundaryConitions().getBoundNodes();
+        res[0] = restoreBoundary(timeSolver.getBoundaryConitions().getBoundNodes(), boundaryConitions);
         
         return res ;
     }

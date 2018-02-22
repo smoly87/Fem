@@ -29,6 +29,7 @@ public abstract class ElemFunc {
 
     public ElemFunc(Element elem) {
         this.elem = elem;
+        funcParams = new FuncParams();
     }
    
    protected void setCurElemParams(Element elem, ElemFuncType type1, ElemFuncType type2,int l, int m ){

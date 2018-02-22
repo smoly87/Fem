@@ -30,7 +30,7 @@ public class SolutionPrecisionTester {
             for(int i = 0; i < N; i++){
                 double X2 =X[ti][i]*X[ti][i];
                 double X02 = X0[ti][i]*X0[ti][i];
-                double curErr = X2 - X02;
+                double curErr = Math.abs(X2 - X02);
                 if(!absValue){
                     curErr = curErr/(X02);
                 }

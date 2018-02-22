@@ -26,7 +26,7 @@ public class SparseMatrixRemoverWalker implements RealMatrixPreservingVisitor{
     protected TargetStatus colTargetStatus;
     
     protected int curRow;
-       
+    protected int targetRow = -1;   
     public OpenMapRealMatrix getR() {
         return R;
     }
@@ -50,8 +50,20 @@ public class SparseMatrixRemoverWalker implements RealMatrixPreservingVisitor{
         R = new OpenMapRealMatrix(Nd, Nd);
         
         rowTargetStatus = new TargetStatus(boundIndexes);
+        rowTargetStatus.setTargetOffset(1);
         colTargetStatus = new TargetStatus(boundIndexes);
         
+    }
+    
+    protected void processElement(int row, int column, double value, TargetCompareResult  rowResult,TargetCompareResult colResult){
+        switch(colResult){
+                case OrdinaryItem:
+                    R.setEntry(row - rowTargetStatus.getOffset(), column - colTargetStatus.getOffset(), value);
+                    break;
+               /* case AllTagetsReached:
+                    colTargetStatus.reset();
+                    break;*/
+              }
     }
     
     @Override
@@ -61,21 +73,24 @@ public class SparseMatrixRemoverWalker implements RealMatrixPreservingVisitor{
 
     @Override
     public void visit(int row, int column, double value) { 
+        if(row == targetRow){
+            return;
+        }
         if(row != curRow){
             colTargetStatus.reset();
         }
-        TargetCompareResult colResult = colTargetStatus.compare(column);      
-        if(rowTargetStatus.compare(row) == TargetCompareResult.OrdinaryItem){
-            switch(colResult){
-                case OrdinaryItem:
-                    R.setEntry(row - rowTargetStatus.getOffset(), column - colTargetStatus.getOffset(), value);
-                    break;
-               /* case AllTagetsReached:
-                    colTargetStatus.reset();
-                    break;*/
-            }
+        TargetCompareResult colResult = colTargetStatus.compare(column);
+        TargetCompareResult rowResult = rowTargetStatus.compare(row) ;
+        switch(rowResult){
+           case  OrdinaryItem: 
+              processElement(row, column, value,rowResult, colResult);
+              break;
+           case TargetReached:
+              targetRow = row;
+              break;
             
-        }   
+        }
+        
         curRow = row;
     }
 

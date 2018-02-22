@@ -91,7 +91,7 @@ public class LinUniformTriangle extends ElemFunc2d{
     public double integrate( ElemFuncType type1, ElemFuncType type2, int l, int m) {
        setCurElemParams(elem, type1, type2, l, m);
        double v1 = applyFuncCall(f1, 0);
-       double v2 = applyFuncCall(f1, 1);
+       double v2 = applyFuncCall(f2, 1);
        return det * v1 *v2;
     }
     

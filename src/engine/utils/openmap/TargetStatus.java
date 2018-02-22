@@ -17,6 +17,15 @@ public class TargetStatus {
     protected int targetInd;
     protected int offset;
     protected boolean statusChanged;
+    protected int targetOffset = 1;
+
+    public int getTargetOffset() {
+        return targetOffset;
+    }
+
+    public void setTargetOffset(int targetOffset) {
+        this.targetOffset = targetOffset;
+    }
 
     
     public TargetStatus(ArrayList<Integer> boundIndexes) {
@@ -34,7 +43,7 @@ public class TargetStatus {
             } else{
                targetInd++;
                targetValue = boundIndexes.get(targetInd);
-               offset = targetInd - 1;
+               offset = targetInd - targetOffset;
             }
             return TargetCompareResult.TargetReached;
         } else{

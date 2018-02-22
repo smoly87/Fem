@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  *
@@ -21,6 +22,7 @@ public class MeshLoaderGmsh extends MeshLoader{
     protected ArrayList<Vector> points;
     protected ArrayList<Element> elements;
     protected ArrayList<Integer> convHullIndexes;
+    protected int indOffset = 1;
 
     public ArrayList<Integer> getConvHullIndexes() {
         return convHullIndexes;
@@ -59,10 +61,10 @@ public class MeshLoaderGmsh extends MeshLoader{
                         points.add(parsePoint(curLine));
                         break;
                     case ELEMENTS:
-                        elements.add(parseElement(curLine));
+                        mesh.addElement(parseElement(curLine));
                         break;
                     case CONV_HULL:
-                        convHullIndexes.add(Integer.parseInt(curLine));
+                        convHullIndexes.add(Integer.parseInt(curLine) - indOffset);
                         break;
                 }
                 
@@ -71,7 +73,8 @@ public class MeshLoaderGmsh extends MeshLoader{
              return null;
          }
          
-
+         Collections.sort(convHullIndexes);
+         mesh.setConvHullInd(convHullIndexes);
          return mesh;
     }
     
@@ -114,7 +117,7 @@ public class MeshLoaderGmsh extends MeshLoader{
        ArrayList<Integer>nodesList = new ArrayList<>(N);
        
        for(int i = offset; i < coordsStrPart.length; i++){
-          nodesList.add(Integer.parseInt(coordsStrPart[i])) ;
+          nodesList.add(Integer.parseInt(coordsStrPart[i]) - indOffset) ;
        }
        Element elem  = new Element(mesh, nodesList);
        return elem;

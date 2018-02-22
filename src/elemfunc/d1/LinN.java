@@ -28,7 +28,7 @@ public class LinN extends ElemFunc implements UnivariateFunction{
 
     public LinN(Element elem) {
         super(elem);
-        funcParams = new FuncParams();
+        
     }
     
     @Override
