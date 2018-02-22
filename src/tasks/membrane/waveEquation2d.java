@@ -121,6 +121,7 @@ public class waveEquation2d extends Task{
                        
         timeSolver = new FemTimeSolver1d();
         OpenMapRealVector Y0 = getInitialConditions(mesh.getPoints());
+        Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
         Pair<OpenMapRealMatrix, OpenMapRealVector> Gmatrixes = timeSolver.buildTimeSystem(C, K, Y0, timeSteps, 0, 1);
         OpenMapRealMatrix M = Gmatrixes.getV1();
         

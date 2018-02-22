@@ -14,9 +14,12 @@ import engine.utils.common.TripleFunction;
 import java.awt.Point;
 import java.util.function.BiFunction;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
 /**
  *
@@ -29,18 +32,33 @@ public class LinUniformTriangle extends ElemFunc2d{
     protected double[] p2 ;
     protected double[] p3 ;
     
-    protected double a;
-    protected double b;
-    protected double g;
-
+    protected double[] a;
+    protected double[] b;
+    protected double[] g;
+    protected RealMatrix detMat;
+    protected DecompositionSolver coofSolver;
     public LinUniformTriangle(Element element) {
         super(element);
         p1 = pointValues(element, 0);
         p2 = pointValues(element, 1);
         p3 = pointValues(element, 2);
         
+        detMat = new Array2DRowRealMatrix(new double[][]{
+            {1, p1[0], p1[1]},
+            {1, p2[0], p2[1]},
+            {1, p3[0], p3[1]},
+        });
+        coofSolver = new QRDecomposition(detMat).getSolver();
+        
         det = countDet(element);
-        countCoofs();
+         
+        a = new double[3];
+        b = new double[3];
+        g = new double[3]; 
+        
+        countCoofs(0);
+        countCoofs(1);
+        countCoofs(2);
     }
     
     protected double[] pointValues(Element element, int nodeInd){
@@ -52,39 +70,41 @@ public class LinUniformTriangle extends ElemFunc2d{
     protected double countDet(Element element){
        
         
-        RealMatrix detMat = new Array2DRowRealMatrix(new double[][]{
-            {1, p1[0], p1[1]},
-            {1, p2[0], p2[1]},
-            {1, p3[0], p3[1]},
-        });
+       
         
        return new  LUDecomposition(detMat).getDeterminant();
     }
     
-    protected void countCoofs(){
-        double d2 = det * 2;
-        a = (p2[0]*p3[1] - p3[0]*p2[1])/d2;
-        b = (p2[1] - p3[1])/d2;
-        g = (p3[0] - p2[0])/d2;
+    protected void countCoofs(int funcNum){
+        double[] bv = new double[3];
+        bv[funcNum] = 1;
+        
+        RealVector bRv = new ArrayRealVector(bv);
+        RealVector koofsV = coofSolver.solve(bRv);
+        double[] koofs = koofsV.toArray();
+        
+        a[funcNum] = koofs[0];
+        b[funcNum] = koofs[1];
+        g[funcNum] = koofs[2];
     }
     
     @Override
     public double F(double[] c, int funcNum) {
         double x = c[0];
         double y = c[1];
-        return a + b*x + g*y;
+        return a[funcNum] + b[funcNum]*x + g[funcNum]*y;
     }
 
   
 
     @Override
     public double dFdx(double[] c, int funcNum) {
-       return b;
+       return b[funcNum];
     }
     
     @Override
     public double dFdy(double[] c, int funcNum) {
-       return g;
+       return g[funcNum];
     }
     
     @Override

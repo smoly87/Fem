@@ -33,7 +33,7 @@ public class PolygonOfExperiments {
     public void test(){
         //loadMesh();
         testWaveEq();
-       // testWaveEq2d();
+        testWaveEq2d();
     }
     
     public void loadMesh(){
@@ -43,7 +43,7 @@ public class PolygonOfExperiments {
     }
     
     public void testWaveEq(){
-        
+        System.out.println("Test 1d wave equation");
         int spatElems= 10;
         int timeElems = 100;
         
@@ -70,7 +70,7 @@ public class PolygonOfExperiments {
     }
      
     public void testWaveEq2d(){
-        
+        System.out.println("Test 2d wave equation");
         int spatElems= 10;
         int timeElems = 100;
         
