@@ -23,7 +23,7 @@ public class MeshLoaderGmsh extends MeshLoader{
     protected ArrayList<Element> elements;
     protected ArrayList<Integer> convHullIndexes;
     protected int indOffset = 1;
-
+    protected boolean firstConvHullElem =false;
     public ArrayList<Integer> getConvHullIndexes() {
         return convHullIndexes;
     }
@@ -64,6 +64,10 @@ public class MeshLoaderGmsh extends MeshLoader{
                         mesh.addElement(parseElement(curLine));
                         break;
                     case CONV_HULL:
+                        if(firstConvHullElem){
+                            firstConvHullElem = false;
+                            continue;
+                        }
                         convHullIndexes.add(Integer.parseInt(curLine) - indOffset);
                         break;
                 }
@@ -94,8 +98,10 @@ public class MeshLoaderGmsh extends MeshLoader{
                 break;
             case "$ConvHull":
                 sectionMode = GMSHMode.CONV_HULL;
-                int convCount = Integer.parseInt(br.readLine());
+                // -1 cause hull is loop, so first element repeats twice.
+                int convCount = Integer.parseInt(br.readLine()) - 1;
                 convHullIndexes = new ArrayList<>(convCount);
+                firstConvHullElem = true;
                 break;    
            default:
                 sectionMode = GMSHMode.NONE;

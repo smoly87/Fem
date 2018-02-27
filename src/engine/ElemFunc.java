@@ -15,6 +15,10 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
  * @author Andrey
  */
 public abstract class ElemFunc {
+    
+   public  double Id(double[] c, int funcNum){
+       return 1.0;
+   }
    public abstract double F(double[] c, int funcNum);
    public abstract double dFdx(double[] c, int funcNum);
    
@@ -44,6 +48,9 @@ public abstract class ElemFunc {
    protected BiFunction<double[], Integer, Double> getFuncRef(ElemFuncType type){
         BiFunction<double[], Integer, Double>  res = null;
         switch(type){
+            case I:
+                res = this::Id;
+                break;
             case F:
                 res = this::F;
                 break;

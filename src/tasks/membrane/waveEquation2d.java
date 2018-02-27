@@ -18,8 +18,10 @@ import engine.FemTimeSolver1d;
 import engine.Mesh;
 import engine.SimpleMeshBuilder;
 import engine.Task;
+import static engine.Task.restoreBoundary;
 import engine.Vector;
 import engine.meshloader.MeshLoaderGmsh;
+import engine.utils.common.MathUtils;
 import engine.utils.common.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,7 +117,24 @@ public class waveEquation2d extends Task{
         applySpatialBoundaryConditions();
          
     }
+    
 
+    
+    public double[][] solveAnalytics(){
+        init();
+        OpenMapRealVector Y0 = getInitialConditions(mesh.getPoints());
+        Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
+        AnalyticEigSolver solver = new AnalyticEigSolver();
+        EigSolution sol = solver.solveOdeSecondOrder(K, C, Y0);
+        double[] T  = MathUtils.linSpace(0, 3, timeSteps);
+        double[][] X =  solver.getSolutionValues(sol, T, boundaryConitions);
+        
+        System.out.println(MathUtils.countZeros(X[0]));
+        
+       
+        return X;
+    }
+    
     public double[][] solve(){
         init();
                        
@@ -131,6 +150,6 @@ public class waveEquation2d extends Task{
        // NewtonRaphsonSolver newtSolver = new NewtonRaphsonSolver();
         RealVector X = solver.solve(Gmatrixes.getV2()); 
         
-        return convertSolution(X, timeSolver, timeSteps);
+        return convertSolution(X, timeSolver.getBoundaryConitions(), timeSteps);
     }
 }

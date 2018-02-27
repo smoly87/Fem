@@ -17,6 +17,7 @@ import engine.Mesh;
 import engine.SimpleMeshBuilder;
 import engine.Task;
 import engine.Vector;
+import engine.utils.common.MathUtils;
 import engine.utils.common.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,6 +110,20 @@ public class waveEquation1d extends Task{
          
     }
 
+    public double[][] solveAnalytics(){
+        init();
+        OpenMapRealVector Y0 = getInitialConditions(mesh.getPoints());
+        Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
+        AnalyticEigSolver solver = new AnalyticEigSolver();
+        EigSolution sol = solver.solveOdeSecondOrder(K, C, Y0);
+        double[] T  = MathUtils.linSpace(0, 1, timeSteps);
+        double[][] X =  solver.getSolutionValues(sol, T, boundaryConitions);
+        double[][] X0 = new double[X.length + 1][X[0].length];
+        
+        X0[0] = restoreBoundary(T, boundaryConitions);
+        return X;
+    }
+    
     public double[][] solve(){
         init();
                        
@@ -124,7 +139,7 @@ public class waveEquation1d extends Task{
        // NewtonRaphsonSolver newtSolver = new NewtonRaphsonSolver();
         RealVector X = solver.solve(Gmatrixes.getV2()); 
         
-        double[][] res = convertSolution(X, timeSolver, timeSteps);
+        double[][] res = convertSolution(X, timeSolver.getBoundaryConitions(), timeSteps);
         return res;
     }
 }

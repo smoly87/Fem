@@ -182,7 +182,7 @@ public class Task {
         return G;
     }
     
-    public double[] restoreBoundary(double[]X,  BoundaryConditions boundaryConditions){
+    public static double[] restoreBoundary(double[]X,  BoundaryConditions boundaryConditions){
         int BN = boundaryConditions.getNodesCount();
         int N = X.length + BN;
         double[] R = new double[N];
@@ -193,7 +193,7 @@ public class Task {
         l = pointInd;
         for(int k = 0; k < BN - 1; k++){
             pointInd = boundaryConditions.getPointIndex(k);
-            R[l] = boundaryConditions.getBoundaryValue1d(k);
+            R[pointInd] = boundaryConditions.getBoundaryValue1d(k);
             int partLen = boundaryConditions.getPointIndex(k + 1) - pointInd - 1;
             System.arraycopy(X, l , R, pointInd+1,  partLen);
             l += partLen;
@@ -207,7 +207,7 @@ public class Task {
         return R;
     }
     
-     protected double[][] convertSolution(RealVector X, FemTimeSolver1d timeSolver, int timeSteps ){
+     protected double[][] convertSolution(RealVector X, BoundaryConditions boundaryCond, int timeSteps ){
         double [] data = X.toArray();
         int BN = boundaryConitions.getNodesCount();
         int N = data.length / timeSteps  ;
@@ -219,7 +219,7 @@ public class Task {
             res[t + 1] = values;
         }
         
-        res[0] = restoreBoundary(timeSolver.getBoundaryConitions().getBoundNodes(), boundaryConitions);
+        res[0] = restoreBoundary(boundaryCond.getBoundNodes(), boundaryConitions);
         
         return res ;
     }

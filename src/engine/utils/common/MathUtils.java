@@ -28,4 +28,13 @@ public class MathUtils {
         }
         return res;
     }
+    
+    public static int countZeros(double[]X){
+        double eps = 0.0001;
+        int c =0;
+        for(int i = 0; i < X.length; i++){
+            if(Math.abs(X[i]) < eps) c++;
+        }
+        return c;
+    }
 }

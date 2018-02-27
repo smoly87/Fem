@@ -70,27 +70,44 @@ public class LinUniformTriangleTest {
      * Test of F method, of class LinUniformTriangle.
      */
     @Test
-    public void testF() {
+    public void testFA() {
         System.out.println("F");
         
         
         double expResult = 1.0;
         
         
-        double result = elemFunc.F(mesh.getPoints().get(0).getCoordinates(), 0);
+        double result = elemFunc.FA(mesh.getPoints().get(0).getCoordinates(), 0);
         assertEquals(expResult, result, delta);
         
-        result = elemFunc.F(mesh.getPoints().get(1).getCoordinates(), 1);
+        result = elemFunc.FA(mesh.getPoints().get(1).getCoordinates(), 1);
         assertEquals(expResult, result, delta);
         
-        result = elemFunc.F(mesh.getPoints().get(2).getCoordinates(), 2);
+        result = elemFunc.FA(mesh.getPoints().get(2).getCoordinates(), 2);
         assertEquals(expResult, result, delta);
+    }
+ @Test
+    public void testF() {
+       double  S = 0.5; 
+       double result = elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, 0, 1);
+       double expValue = S /12;
+       assertEquals(expValue, result, delta);
+       
+       result = elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, 0, 1);
+       expValue = S;
+       assertEquals(expValue, result, delta);
+       /*double XM = (elemFunc.p1[0] + elemFunc.p2[0] + elemFunc.p3[0])/3;
+       double YM = (elemFunc.p1[1] + elemFunc.p2[1] + elemFunc.p3[1])/3;*/
+       
+       /*double expValue = S*(elemFunc.getA()[0] + elemFunc.getB()[0] * XM + elemFunc.getG()[0] * YM);*/
+       //double expValue = S /12;
+       
     }
 
     @Test
-    public void testDet() {
-       double result = elemFunc.countDet(elem);
-       assertEquals(1.0, result, delta);
+    public void testIntegrate() {
+       double result = elemFunc.integrate(ElemFuncType.I, ElemFuncType.I, 0, 0);
+       assertEquals(0.5, result, delta);
     }
     
 }

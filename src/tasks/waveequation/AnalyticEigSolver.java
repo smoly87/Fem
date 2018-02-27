@@ -5,6 +5,9 @@
  */
 package tasks.waveequation;
 
+import engine.BoundaryConditions;
+import engine.Task;
+import engine.utils.common.MathUtils;
 import engine.utils.openmap.Convertion;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -75,11 +78,13 @@ public class AnalyticEigSolver {
         return R.getColumn(0);
     }
     
-    public double[][] getSolutionValues(EigSolution solution, double[]T){
+    public double[][] getSolutionValues(EigSolution solution, double[]T, BoundaryConditions boundaryCond){
        int N = solution.getW().length; 
-       double[][]R = new double[T.length][N];
+       double[][]R = new double[T.length][N + boundaryCond.getNodesCount()];
        for(int t = 0 ; t < T.length; t++){
-          R[t] = F(solution, T[t]);
+          double[] values = F(solution, T[t]);
+          int z = MathUtils.countZeros(values);
+          R[t] = Task.restoreBoundary(values, boundaryCond);
        } 
        return R;
     }

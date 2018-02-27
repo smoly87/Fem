@@ -33,7 +33,9 @@ public class PolygonOfExperiments {
     public void test(){
         //loadMesh();
         testWaveEq();
-        testWaveEq2d();
+       // testWaveEq2d();
+        //testWaveEq1dAnalytics();
+        testWaveEq2dAnalytics();
     }
     
     public void loadMesh(){
@@ -60,6 +62,28 @@ public class PolygonOfExperiments {
         
     }
     
+    public void testWaveEq1dAnalytics(){
+        System.out.println("Test 1d wave equation Analytics Solution");
+        int spatElems= 10;
+        int timeElems = 100;
+        
+        waveEquation1d waveTask = new waveEquation1d(spatElems, timeElems);
+        
+        long ms = System.nanoTime();
+        double[][] X = waveTask.solveAnalytics();
+        System.out.println((System.nanoTime() - ms)/1000000000.0);
+        
+        double[][] XRef = getRefereneSolution(spatElems, timeElems);
+        int N2 =  XRef[0].length;
+        double[][] XRefW0 = new double[XRef.length - 1][N2];
+        int N = XRef.length - 1;
+        System.arraycopy(XRef,1, XRefW0, 0, N);
+        
+        double eps = SolutionPrecisionTester.getEnergyCriteriaPrecision(X, XRefW0, true);
+        System.out.printf("Precision is %f", eps );
+        
+    }
+    
     protected double[][] getRefereneSolution2d(Mesh mesh, int timeSteps){
         ReferenceWave2dSolution refSol = new ReferenceWave2dSolution();
         
@@ -71,8 +95,8 @@ public class PolygonOfExperiments {
      
     public void testWaveEq2d(){
         System.out.println("Test 2d wave equation");
-        int spatElems= 10;
-        int timeElems = 100;
+        int spatElems= 20;
+        int timeElems = 20;
         
         waveEquation2d waveTask = new waveEquation2d(spatElems, timeElems);
      
@@ -82,6 +106,28 @@ public class PolygonOfExperiments {
         System.out.println((System.nanoTime() - ms)/1000000000.0); 
         double[][] XRef = getRefereneSolution2d(waveTask.getMesh(), timeElems);
         double eps = SolutionPrecisionTester.getEnergyCriteriaPrecision(X, XRef, true);
+        System.out.printf("Precision is %f", eps );
+      }
+    
+       public void testWaveEq2dAnalytics(){
+        System.out.println("Test 2d wave equation");
+        int spatElems= 20;
+        int timeElems = 20;
+        
+        waveEquation2d waveTask = new waveEquation2d(spatElems, timeElems);
+     
+        
+        long ms = System.nanoTime();
+        double[][] X = waveTask.solveAnalytics();
+        System.out.println((System.nanoTime() - ms)/1000000000.0); 
+        double[][] XRef = getRefereneSolution2d(waveTask.getMesh(), timeElems);
+       
+        int N2 =  XRef[0].length;
+        double[][] XRefW0 = new double[XRef.length - 1][N2];
+        int N = XRef.length - 1;
+        System.arraycopy(XRef,1, XRefW0, 0, N);
+        
+        double eps = SolutionPrecisionTester.getEnergyCriteriaPrecision(X, XRefW0, true);
         System.out.printf("Precision is %f", eps );
       }
 }
