@@ -25,6 +25,22 @@ public class Mesh {
     }
 
    
+    /**
+     * This method finds elements which contains x in its own range
+     * @param x
+     * @return 
+     */
+    public int findElement(double x){
+        int i = 0;
+        for(Element elem: elements){
+            double elemStart = elem.getPointCoordinates(0)[0] ;
+            if(x > elemStart){
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
 
     public ArrayList<Vector> getPoints() {
         return points;

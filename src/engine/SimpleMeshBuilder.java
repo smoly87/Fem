@@ -6,6 +6,8 @@
 package engine;
 
 import elemfunc.d1.Element1d;
+import elemfunc.d1.LinNBuilder;
+import elemfunc.d1.quad.QuadNBuilder;
 import java.util.ArrayList;
 
 /**
@@ -13,7 +15,7 @@ import java.util.ArrayList;
  * @author Andrey
  */
 public class SimpleMeshBuilder {
-    public static Mesh create1dLineMesh(int elemNum){
+    public static Mesh create1dLineMesh(int elemNum, boolean applyFunc){
        // Mesh Mesh = new Mesh();
        int N = elemNum + 1;
        ArrayList<Vector> points = new ArrayList<>(N);
@@ -36,9 +38,39 @@ public class SimpleMeshBuilder {
            mesh.addElement(el);
        }
        
-      
+        if(applyFunc) mesh.applyElemFunc(new LinNBuilder());
        //mesh.setNodesCount(N);
        
+       return mesh;
+    }
+    
+    public static Mesh create1dLineMeshQuad(int elemNum, boolean applyFunc){
+       // Mesh Mesh = new Mesh();
+       int N = 3*elemNum  - (elemNum -1);
+       ArrayList<Vector> points = new ArrayList<>(N);
+               
+       double h = 1/(double)(N-1);
+       for(int i = 0; i < N; i++){
+           points.add(new Vector(new double[]{h*i}));
+       }
+       
+       Mesh mesh = new Mesh(points);
+       
+       for(int i = 0; i < elemNum; i++){
+           ArrayList<Integer> nodesList = new ArrayList<>(3);
+           int s = 0; //Minus common points number according to current element number
+           if(i > 0) s = 3*i-(i);
+           nodesList.add(s);
+           nodesList.add(s + 1);
+           nodesList.add(s + 2);
+           
+           Element el = new Element1d(mesh, nodesList);
+           mesh.addElement(el);
+       }
+       
+      
+       //mesh.setNodesCount(N);
+       if(applyFunc) mesh.applyElemFunc(new QuadNBuilder());
        return mesh;
     }
 }

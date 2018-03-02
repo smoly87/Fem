@@ -41,7 +41,7 @@ public class heatEquation1dSys extends Task{
     
     protected void init() {
         
-        mesh = SimpleMeshBuilder.create1dLineMesh(elemNum);
+        mesh = SimpleMeshBuilder.create1dLineMesh(elemNum, true);
         ArrayList<Element> elements = mesh.getElements();
 
         int N = mesh.getNodesCount();

@@ -27,26 +27,27 @@ import org.apache.commons.math3.linear.RealVector;
  *
  * @author Andrey
  */
-public class heatEquation1d extends Task{
+public class phiEquation1d1 extends Task{
     protected int elemNum;
 
-    public heatEquation1d(int elemNum) {
+    public phiEquation1d1(int elemNum) {
         this.elemNum = elemNum;
     }
  
     
-     protected double Klm(Element elem, Integer l, Integer m){
-        return elem.getElemFunc().integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
+    protected double Klm(Element elem, Integer l, Integer m){
+        return elem.getElemFunc().integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m)+elem.getElemFunc().integrate(ElemFuncType.F, ElemFuncType.F, l, m);
     }
+    
     protected void init() {
         
-        mesh = SimpleMeshBuilder.create1dLineMeshQuad(elemNum, true);
+        mesh = SimpleMeshBuilder.create1dLineMeshQuad(1, true);
          
         this.initMatrixes(mesh.getNodesCount());
         
         K = fillGlobalStiffness(K, this::Klm);
         
-        double[] QBound = new double[]{100, 200};
+        double[] QBound = new double[]{0, 1};
         Integer[] boundNodes = new Integer[]{0, mesh.getNodesCount()-1};
         boundaryConitions = new BoundaryConditions(QBound, boundNodes);
         

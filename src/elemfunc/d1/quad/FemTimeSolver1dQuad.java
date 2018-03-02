@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package engine;
+package elemfunc.d1.quad;
 
+import engine.*;
 import elemfunc.d1.LinN;
 import elemfunc.d1.LinNBuilder;
 import engine.ElemFunc;
@@ -26,16 +27,18 @@ import org.apache.commons.math3.linear.RealMatrix;
  *
  * @author Andrey
  */
-public class FemTimeSolver1d extends FemTimeSolver {
+public class FemTimeSolver1dQuad extends FemTimeSolver{
 
-    public FemTimeSolver1d() {
-        funcBuilder = new LinNBuilder();
+    public FemTimeSolver1dQuad() {
+        funcBuilder = new QuadNBuilder();
     }
 
+ 
+   
     @Override
     protected OpenMapRealMatrix getSysBlock(Element elem, int l, int m){
         ElemFunc elemFunc = elem.getElemFunc();
-        double CKoof =  -elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
+        double CKoof =  elemFunc.integrate(ElemFuncType.d2Fdx, ElemFuncType.d2Fdx, l, m);
         double KKoof =  elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, l, m);
         
         OpenMapRealMatrix CLoc = (OpenMapRealMatrix)CB.scalarMultiply(CKoof);
@@ -46,6 +49,6 @@ public class FemTimeSolver1d extends FemTimeSolver {
 
     @Override
     protected Mesh createTimeMesh(int tStepsCnt) {
-         return SimpleMeshBuilder.create1dLineMesh(tStepsCnt, false); 
+        return SimpleMeshBuilder.create1dLineMeshQuad(tStepsCnt, true);
     }
 }

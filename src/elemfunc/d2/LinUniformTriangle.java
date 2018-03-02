@@ -70,11 +70,13 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
     protected SimpsonIntegrator integrator2;
     protected double L1;
     protected double J;
-    protected Array2DRowRealMatrix Jac;
+    protected RealMatrix Jac;
     protected RealMatrix derivativesCoofs;
     
     public LinUniformTriangle(Element element) {
         super(element);
+         funcsCount = 3;
+        
         p1 = pointValues(element, 0);
         p2 = pointValues(element, 1);
         p3 = pointValues(element, 2);
@@ -173,9 +175,11 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
        
         double sq = ((double)facProd(v) /(double)(CombinatoricsUtils.factorial(summ(v) + 2))) * det;
         return sq;
-        /* setCurElemParams(elem, type1, type2, l, m);
+         //setCurElemParams(elem, type1, type2, l, m);
    
-       return  J * integrator.integrate(20, this, 0, 0.999999);*/
+        /* double JL = 1.0;
+         if(type1 == ElemFuncType.F) JL = J;
+       return  JL * integrator.integrate(20, this, 0, 0.999999);*/
        /*double v1 = applyFuncCall(f1, 0);
        double v2 = applyFuncCall(f2, 1);
        //TODO: Figure out multiplier 0.5 is necessary or not.
@@ -215,12 +219,12 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
             {-1, 0, 1},
         });
         
-        
+        Jac = Jac.transpose();
         LUDecomposition decomp = new  LUDecomposition(Jac);
         J = decomp.getDeterminant();
         RealMatrix JInv = decomp.getSolver().getInverse();
         derivativesCoofs = JInv.multiply(Koofs);
-        
+       // System.out.println("8");
     }
 
 

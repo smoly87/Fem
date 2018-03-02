@@ -93,7 +93,7 @@ public class LinUniformTriangleTest {
        double expValue = S /12;
        assertEquals(expValue, result, delta);
        
-       result = elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, 0, 1);
+       result = elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, 0, 0);
        expValue = S;
        assertEquals(expValue, result, delta);
        /*double XM = (elemFunc.p1[0] + elemFunc.p2[0] + elemFunc.p3[0])/3;

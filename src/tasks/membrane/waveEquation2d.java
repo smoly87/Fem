@@ -9,11 +9,13 @@ import tasks.waveequation.*;
 import elemfunc.d1.Element1d;
 import elemfunc.d1.LinN;
 import elemfunc.d1.LinNBuilder;
+import elemfunc.d1.quad.FemTimeSolver1dQuad;
 import elemfunc.d2.LinUniformTriangleBuilder;
 import engine.BoundaryConditions;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;
+import engine.FemTimeSolver;
 import engine.FemTimeSolver1d;
 import engine.Mesh;
 import engine.SimpleMeshBuilder;
@@ -48,7 +50,7 @@ public class waveEquation2d extends Task{
     protected int timeSteps;
     
     protected OpenMapRealMatrix C;
-    protected FemTimeSolver1d timeSolver; 
+    protected FemTimeSolver timeSolver; 
     
     public waveEquation2d(int elemNum, int timeSteps) {
         this.elemNum = elemNum;
@@ -63,6 +65,14 @@ public class waveEquation2d extends Task{
     }
     
     protected void fillMatrixes(){
+        //
+      /*  double d = 0.005;
+        double[][] KLoc = new double[][]{
+            {d*1.0, d*-1.0, 0.0},
+            {d*-1.0, d*2.0, d*-1.0},
+            {0.0, d*-1.0, d*1.0},    
+        };
+        K = fillGlobalStiffness(K, KLoc);*/
         K = fillGlobalStiffness(K, this::Klm);
         C = fillGlobalStiffness(C, this::Clm);
     }
@@ -126,7 +136,7 @@ public class waveEquation2d extends Task{
         Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
         AnalyticEigSolver solver = new AnalyticEigSolver();
         EigSolution sol = solver.solveOdeSecondOrder(K, C, Y0);
-        double[] T  = MathUtils.linSpace(0, 3, timeSteps);
+        double[] T  = MathUtils.linSpace(0, 1, timeSteps);
         double[][] X =  solver.getSolutionValues(sol, T, boundaryConitions);
         
         System.out.println(MathUtils.countZeros(X[0]));
@@ -138,7 +148,7 @@ public class waveEquation2d extends Task{
     public double[][] solve(){
         init();
                        
-        timeSolver = new FemTimeSolver1d();
+        timeSolver = new FemTimeSolver1dQuad();
         OpenMapRealVector Y0 = getInitialConditions(mesh.getPoints());
         Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
         Pair<OpenMapRealMatrix, OpenMapRealVector> Gmatrixes = timeSolver.buildTimeSystem(C, K, Y0, timeSteps, 0, 1);

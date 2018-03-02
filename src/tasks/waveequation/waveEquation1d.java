@@ -8,10 +8,13 @@ package tasks.waveequation;
 import elemfunc.d1.Element1d;
 import elemfunc.d1.LinN;
 import elemfunc.d1.LinNBuilder;
+import elemfunc.d1.quad.FemTimeSolver1dQuad;
+import elemfunc.d1.quad.QuadNBuilder;
 import engine.BoundaryConditions;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;
+import engine.FemTimeSolver;
 import engine.FemTimeSolver1d;
 import engine.Mesh;
 import engine.SimpleMeshBuilder;
@@ -44,12 +47,16 @@ public class waveEquation1d extends Task{
     protected int timeSteps;
     
     protected OpenMapRealMatrix C;
-    protected FemTimeSolver1d timeSolver; 
+    protected FemTimeSolver timeSolver; 
     
     public waveEquation1d(int elemNum, int timeSteps) {
         this.elemNum = elemNum;
         this.timeSteps = timeSteps;
 
+    }
+
+    public FemTimeSolver getTimeSolver() {
+        return timeSolver;
     }
 
     @Override
@@ -101,8 +108,12 @@ public class waveEquation1d extends Task{
     
     protected void init() {
         
-        mesh = SimpleMeshBuilder.create1dLineMesh(elemNum);
-        mesh.applyElemFunc(new LinNBuilder());
+        //mesh = SimpleMeshBuilder.create1dLineMesh(elemNum, true);
+  
+        
+        mesh = SimpleMeshBuilder.create1dLineMeshQuad(elemNum, true);
+       
+        
         this.initMatrixes(mesh.getNodesCount());
         
         fillMatrixes();
@@ -127,7 +138,7 @@ public class waveEquation1d extends Task{
     public double[][] solve(){
         init();
                        
-        timeSolver = new FemTimeSolver1d();
+        timeSolver = new FemTimeSolver1dQuad();
         OpenMapRealVector Y0 = getInitialConditions(mesh.getPoints());
         Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
         Pair<OpenMapRealMatrix, OpenMapRealVector> Gmatrixes = timeSolver.buildTimeSystem(C, K, Y0, timeSteps, 0, 1);
@@ -139,7 +150,9 @@ public class waveEquation1d extends Task{
        // NewtonRaphsonSolver newtSolver = new NewtonRaphsonSolver();
         RealVector X = solver.solve(Gmatrixes.getV2()); 
         
-        double[][] res = convertSolution(X, timeSolver.getBoundaryConitions(), timeSteps);
+        // -1 cause first time node was cutting off by applying for boundary conditions.
+        int Tn = timeSolver.getTimeMesh().getNodesCount() - 1;
+        double[][] res = convertSolution(X, timeSolver.getBoundaryConitions(), Tn);
         return res;
     }
 }

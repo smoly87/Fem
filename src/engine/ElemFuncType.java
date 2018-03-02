@@ -10,5 +10,6 @@ package engine;
  * @author Andrey
  */
 public enum ElemFuncType {
-    I, F, dFdx, dFdy
+    I, F, dFdx, dFdy,
+    d2Fdx, d2Fdy
 }

@@ -15,7 +15,11 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
  * @author Andrey
  */
 public abstract class ElemFunc {
-    
+   protected int funcsCount; 
+
+    public int getFuncsCount() {
+        return funcsCount;
+    }
    public  double Id(double[] c, int funcNum){
        return 1.0;
    }
@@ -60,6 +64,14 @@ public abstract class ElemFunc {
         }
         return res;
     }
-        
+    
+    public double FA(double[] c, int funcNum){
+        double[] lc = absCoordToLocal(c);
+        return F(lc, funcNum);
+    }
+    
+    protected double[] absCoordToLocal(double[]c ){
+        return c;
+    }    
    
 }

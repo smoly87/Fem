@@ -5,6 +5,8 @@
  */
 package engine.utils.common;
 
+import java.util.Arrays;
+
 /**
  *
  * @author Andrey
@@ -36,5 +38,23 @@ public class MathUtils {
             if(Math.abs(X[i]) < eps) c++;
         }
         return c;
+        
+    }
+    
+    public static double arrMax(double[] X){
+        double max = X[0];
+        for(int i = 1; i < X.length; i++){
+            if(X[i] >max) max = X[i];
+        }
+        return max;
+    }
+    
+    public static double arrMax(double[][] X){
+        double max = arrMax(X[0]);
+        for(int i = 1; i < X.length; i++){
+            double val = arrMax(X[i]) ;
+            if( val > max) max = val;
+        }
+        return max;
     }
 }

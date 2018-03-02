@@ -235,4 +235,16 @@ public class Task {
         
         return M;
     } 
+    
+    protected OpenMapRealMatrix fillGlobalStiffness(OpenMapRealMatrix M, double[][] MLoc) {
+        ArrayList<Element> elements = mesh.getElements();
+        for (int i = 0; i < elements.size(); i++) {
+            Element elem = elements.get(i);
+
+       
+            M = this.arrangeInGlobalStiffness(M, MLoc, elem.getNodesList());
+        }
+        
+        return M;
+    } 
 }

@@ -21,13 +21,15 @@ public class ReferenceWave2dSolution {
         int TN  =  T.length;
         int XN = points.size();
         double[][] F = new double[TN][XN];
+        a = 1;
+        double w = a* PI * Math.sqrt(2);
         for(int ti = 0; ti < TN; ti++){
             double t = T[ti];
             for(int i = 0; i < XN; i++){
                 Vector point = points.get(i);
                 double x = point.getCoordinates()[0];
                 double y = point.getCoordinates()[1];
-                F[ti][i] = cos(a* PI * Math.sqrt(2)* t) * sin(x * PI) * sin(y * PI);
+                F[ti][i] = cos(w* t) * sin(x * PI) * sin(y * PI);
             }
         }
         
