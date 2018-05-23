@@ -102,7 +102,8 @@ public class Task {
       for(int k = 0; k < N;k++){
          int c = k;
          for(int r = 0; r < N-k;r++){
-            KLoc[r][c] = KLMFunc.apply(elem, r, c);//elem.getElemFunc().integrate( type1, type2, r, c);
+            double v = KLMFunc.apply(elem, r, c);//elem.getElemFunc().integrate( type1, type2, r, c);
+            KLoc[r][c] = v;
             KLoc[c][r] = KLoc[r][c]; 
             c++;
          } 
@@ -117,7 +118,7 @@ public class Task {
             for(int m = 0; m < N; m++){
                 int i = numsList.get(l);
                 int j = numsList.get(m);  
-                   M.addToEntry(i, j, KLoc[l][m]);
+                M.addToEntry(i, j, KLoc[l][m]);
             }
         }
         

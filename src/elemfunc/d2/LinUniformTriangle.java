@@ -32,16 +32,16 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction{
     protected double det;
 
+    public double[] getP0() {
+        return p0;
+    }
+
     public double[] getP1() {
         return p1;
     }
 
     public double[] getP2() {
         return p2;
-    }
-
-    public double[] getP3() {
-        return p3;
     }
 
     public double[] getA() {
@@ -56,9 +56,9 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
         return g;
     }
     
+    protected double[] p0 ;
     protected double[] p1 ;
     protected double[] p2 ;
-    protected double[] p3 ;
     
     protected double[] a;
     protected double[] b;
@@ -72,20 +72,20 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
     protected double J;
     protected RealMatrix Jac;
     protected RealMatrix derivativesCoofs;
-    
+    protected Array2DRowRealMatrix dLKoofs; 
     public LinUniformTriangle(Element element) {
         super(element);
          funcsCount = 3;
         
-        p1 = pointValues(element, 0);
-        p2 = pointValues(element, 1);
-        p3 = pointValues(element, 2);
+        p0 = pointValues(element, 0);
+        p1 = pointValues(element, 1);
+        p2= pointValues(element, 2);
         countJ();
         
         detMat = new Array2DRowRealMatrix(new double[][]{
+            {1, p0[0], p0[1]},
             {1, p1[0], p1[1]},
             {1, p2[0], p2[1]},
-            {1, p3[0], p3[1]},
         });
         coofSolver = new QRDecomposition(detMat).getSolver();
         
@@ -166,22 +166,60 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
         return s;
     }
     
-    @Override
-    public double integrate( ElemFuncType type1, ElemFuncType type2, int l, int m) {
-        //CombinatoricsUtils.factorial(m);
+    protected double LIntegral(int[] v ){
+        double denom = CombinatoricsUtils.factorial(summ(v) + 2);
+        double sq = (double)facProd(v)* det  / denom ;
+        return sq;
+    }
+    public double integrateLCoordFormula( ElemFuncType type1, ElemFuncType type2, int l, int m) {
+        double sq = 0;
+        /*if((type1 == ElemFuncType.F || type2 == ElemFuncType.F) && (l == 0 || m ==0)){
+            if(l != 0){
+                int t = l;
+                l = m;
+                m = t;
+            }
+            switch(m){
+                case 0:
+                    sq = LIntegral(new int[3]) - 4* LIntegral(new int[]{1, 0, 0}) 
+                       + 2 * LIntegral(new int[]{1, 1, 0})+ 2 * LIntegral(new int[]{2, 0, 0});
+                    break;
+                case 1: case 2:
+                    sq =  LIntegral(new int[]{1, 0, 0}) - LIntegral(new int[]{1, 1, 0}) 
+                        - LIntegral(new int[]{2, 0, 0});
+                    break;
+                    
+            }
+             return sq;
+        }*/
+        
         int[] v = new int[3];
         if(type1 == ElemFuncType.F) v[l]++;
         if(type2 == ElemFuncType.F) v[m]++;
        
-        double sq = ((double)facProd(v) /(double)(CombinatoricsUtils.factorial(summ(v) + 2))) * det;
+        sq = LIntegral(v);
         return sq;
-         //setCurElemParams(elem, type1, type2, l, m);
-   
+    }
+    
+   /* public double integrateabgFormula(ElemFuncType type1, ElemFuncType type2, int l, int m){
+        
+    }*/
+    
+    @Override
+    public double integrate( ElemFuncType type1, ElemFuncType type2, int l, int m) {
+      
+        
+       
+         /*setCurElemParams(elem, type1, type2, l, m);
+         return  integrateLCoordFormula(type1, type2, l,m);*/
         /* double JL = 1.0;
-         if(type1 == ElemFuncType.F) JL = J;
-       return  JL * integrator.integrate(20, this, 0, 0.999999);*/
-       /*double v1 = applyFuncCall(f1, 0);
-       double v2 = applyFuncCall(f2, 1);
+         if(type1 == ElemFuncType.F || type1 == ElemFuncType.I) JL = J;*/
+        setCurElemParams(elem, type1, type2, l, m);
+        double Integ = integrator.integrate(20, this, 0, 0.999999);
+       return  J * Integ;
+       /*double[] x =  new double[2];
+       double v1 = applyFuncCall(f1, 0, x);
+       double v2 = applyFuncCall(f2, 1, x);
        //TODO: Figure out multiplier 0.5 is necessary or not.
        return 0.5*det * v1 *v2;*/
     }
@@ -209,25 +247,40 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
 
     protected void countJ(){
         Jac = new Array2DRowRealMatrix(new double[][]{
-            { -p1[0]+p2[0], -p1[0]+p3[0]},
-            { -p1[1]+p2[1], -p1[1]+p3[1]},
+            { -p0[0]+p1[0], -p0[1]+p1[1]},
+            { -p0[0]+p2[0], -p0[1]+p2[1]},
             
         });
         
-        Array2DRowRealMatrix Koofs = new Array2DRowRealMatrix(new double[][]{
+         dLKoofs = new Array2DRowRealMatrix(new double[][]{
             {-1, 1, 0},
             {-1, 0, 1},
         });
         
-        Jac = Jac.transpose();
+        
         LUDecomposition decomp = new  LUDecomposition(Jac);
         J = decomp.getDeterminant();
         RealMatrix JInv = decomp.getSolver().getInverse();
-        derivativesCoofs = JInv.multiply(Koofs);
+        derivativesCoofs = JInv.multiply(dLKoofs);
        // System.out.println("8");
     }
+    
+  /* @Override
+   public double F(double[] c, int funcNum) {
+        double x = c[0];
+        double y = c[1];
+        return a[funcNum] + b[funcNum]*x + g[funcNum]*y;
+    }
 
-
+    @Override
+    public double dFdx(double[] c, int funcNum) {
+       return b[funcNum];
+    }
+    
+    @Override
+    public double dFdy(double[] c, int funcNum) {
+       return g[funcNum];
+    }*/
     @Override
     public double F(double[] c, int funcNum) {
         return c[funcNum] ;
@@ -235,11 +288,13 @@ public class LinUniformTriangle extends ElemFunc2d implements UnivariateFunction
 
     @Override
     public double dFdx(double[] c, int funcNum) {
+        //return derivativesCoofs.getEntry(0, funcNum);
         return derivativesCoofs.getEntry(0, funcNum);
     }
     
     @Override
     public double dFdy(double[] c, int funcNum) {
-        return derivativesCoofs.getEntry(1, funcNum);
+        //return derivativesCoofs.getEntry(1, funcNum);
+         return derivativesCoofs.getEntry(1, funcNum);
     }
 }

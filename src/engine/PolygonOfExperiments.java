@@ -43,11 +43,12 @@ public class PolygonOfExperiments {
     public void test(){
         //loadMesh();
        // testHeatEq();
-       //testWaveEq();
-        //testPhiEq();
-        //testWaveEq1dAnalytics();
-      testWaveEq2d();
-       // testWaveEq2dAnalytics();
+       testWaveEq();
+       /*testWaveEq1dAnalytics();*/
+       // testPhiEq();
+       
+  /* testWaveEq2d();
+        testWaveEq2dAnalytics();*/
     }
     
     public void loadMesh(){
@@ -58,13 +59,13 @@ public class PolygonOfExperiments {
     
     public void testWaveEq(){
         System.out.println("Test 1d wave equation");
-        int spatElems= 10;
-        int timeElems = 10;
+        int spatElems= 20;
+        int timeElems = 20;
         
         waveEquation1d waveTask = new waveEquation1d(spatElems, timeElems);
         
         long ms = System.nanoTime();
-        double[][] X = waveTask.solve();
+        double[][] X = waveTask.solveFDM();
         System.out.println((System.nanoTime() - ms)/1000000000.0);
         
         int timeNodes = waveTask.getTimeSolver().getTimeMesh().getNodesCount();
@@ -72,6 +73,10 @@ public class PolygonOfExperiments {
         
         double eps = SolutionPrecisionTester.getEnergyCriteriaPrecision(X, XRef, true);
         System.out.printf("Precision is %f", eps );
+        System.out.println("Max value is " + MathUtils.arrMax(X));
+        
+        eps = SolutionPrecisionTester.getSummaryEnergyPrecision(X, XRef, false);
+        System.out.printf("Full energy precision is %f", eps );
         
     }
      public void testHeatEq(){
@@ -97,7 +102,7 @@ public class PolygonOfExperiments {
         
         Mesh mesh = task.getMesh();
         
-        double x = 0.3333;
+        double x = 1.0/3.0;
         int elemNum = mesh.findElement(x);
         Element elem = mesh.getElements().get(elemNum);
        
@@ -106,8 +111,8 @@ public class PolygonOfExperiments {
      
     public void testWaveEq1dAnalytics(){
         System.out.println("Test 1d wave equation Analytics Solution");
-        int spatElems= 10;
-        int timeElems = 100;
+        int spatElems= 40;
+        int timeElems = 40;
         
         waveEquation1d waveTask = new waveEquation1d(spatElems, timeElems);
         
@@ -119,7 +124,10 @@ public class PolygonOfExperiments {
         
          double[][] XRefW0 = getRefereneSolutionEx(spatElems, timeElems);
         double eps = SolutionPrecisionTester.getEnergyCriteriaPrecision(X, XRefW0, true);
-        System.out.printf("Precision is %f", eps );
+        System.out.printf("Mean energy precision is %f", eps );
+        
+        eps = SolutionPrecisionTester.getSummaryEnergyPrecision(X, XRefW0, false);
+        System.out.printf("Full energy precision is %f", eps );
         
         
     }
@@ -149,6 +157,8 @@ public class PolygonOfExperiments {
         System.out.printf("Precision is %f", eps );
         
         System.out.println("Max value is " + MathUtils.arrMax(X));
+        eps = SolutionPrecisionTester.getSummaryEnergyPrecision(X, XRef, false);
+        System.out.printf("Full energy precision is %f", eps );
       }
     
        public void testWaveEq2dAnalytics(){
@@ -171,6 +181,8 @@ public class PolygonOfExperiments {
         
         double eps = SolutionPrecisionTester.getEnergyCriteriaPrecision(X, XRefW0, true);
         System.out.printf("Precision is %f", eps );
-          System.out.println("Max value is " + MathUtils.arrMax(X));
+        System.out.println("Max value is " + MathUtils.arrMax(X));
+        eps = SolutionPrecisionTester.getSummaryEnergyPrecision(X, XRefW0, false);
+        System.out.printf("Full energy precision is %f", eps );
       }
 }

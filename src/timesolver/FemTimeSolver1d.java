@@ -3,24 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package engine;
+package timesolver;
 
-import elemfunc.d1.LinN;
 import elemfunc.d1.LinNBuilder;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;
 import engine.Mesh;
-import engine.SysBlockBuilder;
-import engine.Task;
-import engine.utils.common.MathUtils;
-import engine.utils.common.Pair;
-import java.util.ArrayList;
-import java.util.Arrays;
-
+import engine.SimpleMeshBuilder;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.OpenMapRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
 
 /**
  *

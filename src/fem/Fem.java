@@ -20,15 +20,7 @@ public class Fem {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
-     /*   heatEquation1d task =new heatEquation1d(10);
-        double[] X = task.solve();
-        System.out.println(X.toString());*/
-       
-       /* waveEquation1d waveTask = new waveEquation1d(10, 100);
-        waveTask.solve();*/
-        
+    public static void main(String[] args) {       
         PolygonOfExperiments polygon = new PolygonOfExperiments();
         polygon.test();
     }

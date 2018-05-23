@@ -36,7 +36,9 @@ public class phiEquation1d1 extends Task{
  
     
     protected double Klm(Element elem, Integer l, Integer m){
-        return elem.getElemFunc().integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m)+elem.getElemFunc().integrate(ElemFuncType.F, ElemFuncType.F, l, m);
+        return elem.getElemFunc().integrate(ElemFuncType.F, ElemFuncType.d2Fdx, l, m)-elem.getElemFunc().integrate(ElemFuncType.F, ElemFuncType.F, l, m);
+        //Weak form
+        //return elem.getElemFunc().integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m)+elem.getElemFunc().integrate(ElemFuncType.F, ElemFuncType.F, l, m);
     }
     
     protected void init() {

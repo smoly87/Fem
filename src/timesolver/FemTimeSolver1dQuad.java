@@ -3,25 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package elemfunc.d1.quad;
+package timesolver;
 
 import engine.*;
-import elemfunc.d1.LinN;
-import elemfunc.d1.LinNBuilder;
+import elemfunc.d1.quad.QuadNBuilder;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;
 import engine.Mesh;
-import engine.SysBlockBuilder;
-import engine.Task;
-import engine.utils.common.MathUtils;
-import engine.utils.common.Pair;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.OpenMapRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
+
 
 /**
  *
@@ -38,9 +29,15 @@ public class FemTimeSolver1dQuad extends FemTimeSolver{
     @Override
     protected OpenMapRealMatrix getSysBlock(Element elem, int l, int m){
         ElemFunc elemFunc = elem.getElemFunc();
-        double CKoof =  elemFunc.integrate(ElemFuncType.d2Fdx, ElemFuncType.d2Fdx, l, m);
+       /* double CKoof =  elemFunc.integrate(ElemFuncType.F, ElemFuncType.d2Fdx, l, m);
+        double KKoof =  elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, l, m);*/
+         
+       
+        double CKoof =  -elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
         double KKoof =  elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, l, m);
         
+       /* double CKoof =  elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, l, m);
+        double KKoof =  elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, l, m);*/
         OpenMapRealMatrix CLoc = (OpenMapRealMatrix)CB.scalarMultiply(CKoof);
         OpenMapRealMatrix KLoc = (OpenMapRealMatrix)KB.scalarMultiply(KKoof);
         
@@ -49,6 +46,6 @@ public class FemTimeSolver1dQuad extends FemTimeSolver{
 
     @Override
     protected Mesh createTimeMesh(int tStepsCnt) {
-        return SimpleMeshBuilder.create1dLineMeshQuad(tStepsCnt, true);
+        return SimpleMeshBuilder.create1dLineMeshQuad(tStepsCnt, false);
     }
 }

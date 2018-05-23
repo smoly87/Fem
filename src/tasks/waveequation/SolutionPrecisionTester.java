@@ -5,6 +5,8 @@
  */
 package tasks.waveequation;
 
+import engine.utils.common.MathUtils;
+
 /**
  *
  * @author Andrey
@@ -66,5 +68,14 @@ public class SolutionPrecisionTester {
         }
         
         return sumErr/Tn;
+    }
+    
+    
+    
+    public static double getSummaryEnergyPrecision(double[][]X, double[][] X0, boolean absValue){
+        double fullEnergX= MathUtils.arrQuadSumm(X);
+        double fullEnergRef= MathUtils.arrQuadSumm(X0);
+        return fullEnergX/fullEnergRef;
+        
     }
 }

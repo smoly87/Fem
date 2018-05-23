@@ -9,9 +9,13 @@ import engine.ElemFuncType;
 import engine.Element;
 import engine.Mesh;
 import engine.Vector;
+import engine.utils.common.MathUtils;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.BiFunction;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -69,7 +73,7 @@ public class LinUniformTriangleTest {
     /**
      * Test of F method, of class LinUniformTriangle.
      */
-    @Test
+   /* @Test
     public void testFA() {
         System.out.println("F");
         
@@ -77,37 +81,96 @@ public class LinUniformTriangleTest {
         double expResult = 1.0;
         
         
-        double result = elemFunc.FA(mesh.getPoints().get(0).getCoordinates(), 0);
+        double result = elemFunc.F(mesh.getPoints().get(0).getCoordinates(), 0);
         assertEquals(expResult, result, delta);
         
-        result = elemFunc.FA(mesh.getPoints().get(1).getCoordinates(), 1);
+        result = elemFunc.F(mesh.getPoints().get(1).getCoordinates(), 1);
         assertEquals(expResult, result, delta);
         
-        result = elemFunc.FA(mesh.getPoints().get(2).getCoordinates(), 2);
+        result = elemFunc.F(mesh.getPoints().get(2).getCoordinates(), 2);
         assertEquals(expResult, result, delta);
+    }*/
+ 
+    protected double countPointsMean(int coordInd){
+        double s = 0.0;
+        for(int i = 0; i < 3; i++){
+           s +=  mesh.getPoints().get(i).getCoordinates()[coordInd];
+        }
+        return s / 3.0;
+       
     }
- @Test
+   
+    protected double FValueIntegral(int funcNum, double S){
+        //Element el = mesh.getElements().get(0);
+        LinUniformTriangle elemF = (LinUniformTriangle)elemFunc;
+        double Xc = countPointsMean(0);
+        double Yc = countPointsMean(1);
+        double vInteg = S * (elemFunc.getA()[funcNum] + elemFunc.getB()[funcNum] * Xc + elemFunc.getG()[funcNum] * Yc);
+        return vInteg;
+    }
+    
+    
+    
+    @Test
+    public void testStiffnessFirstOrderProd(){
+        double[][] KLoc = new double[3][3];
+        
+        for(int i = 0; i < 3; i++){
+          for(int j = 0; j < 3; j++){ 
+              double resX = elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, i, j) ;
+              double resY =  elemFunc.integrate(ElemFuncType.dFdy, ElemFuncType.dFdy, i, j);
+              KLoc[i][j] = resX + resY;
+          } 
+        }
+        
+        double[][] expRes = new double[][]{
+            {1, -1, 0},
+            {-1, 2, -1},
+            {0, -1, 1}
+        };
+        expRes = MathUtils.arrMultiply(expRes, 0.5);
+        
+        
+        boolean compareRes = MathUtils.arrEquals(expRes, KLoc, delta);
+        assertEquals(true, compareRes);
+    }
+    
+    @Test
     public void testF() {
        double  S = 0.5; 
-       double result = elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, 0, 1);
-       double expValue = S /12;
+       double result = elemFunc.integrate(ElemFuncType.F, ElemFuncType.I, 1, 1);
+       double expValue = S /3;
+       expValue = FValueIntegral(0, S);
        assertEquals(expValue, result, delta);
+        
        
-       result = elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, 0, 0);
-       expValue = S;
+      /* expValue = FValueIntegral();*/
+       /*result = elemFunc.integrate(ElemFuncType.F, ElemFuncType.F, 0, 0);
+       expValue = S /12;
+       assertEquals(expValue, result, delta);*/
+       
+       double resX = elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, 1, 1) ;
+       double resY =  elemFunc.integrate(ElemFuncType.dFdy, ElemFuncType.dFdy, 1, 1);
+       result = resX + resY;
+       expValue = 1.0;
        assertEquals(expValue, result, delta);
-       /*double XM = (elemFunc.p1[0] + elemFunc.p2[0] + elemFunc.p3[0])/3;
-       double YM = (elemFunc.p1[1] + elemFunc.p2[1] + elemFunc.p3[1])/3;*/
+      // result = elemFunc.integrate(ElemFuncType.dFdx, ElemFuncType.dFdx, 0, 0);
+      /* expValue = S;
+       assertEquals(expValue, result, delta);*/
+       //double XM = (elemFunc.p1[0] + elemFunc.p2[0] + elemFunc.p3[0])/3;
+     //  double YM = (elemFunc.p1[1] + elemFunc.p2[1] + elemFunc.p3[1])/3;
        
-       /*double expValue = S*(elemFunc.getA()[0] + elemFunc.getB()[0] * XM + elemFunc.getG()[0] * YM);*/
+       //double expValue = S*(elemFunc.getA()[0] + elemFunc.getB()[0] * XM + elemFunc.getG()[0] * YM);
        //double expValue = S /12;
-       
-    }
+    }   
+    
 
     @Test
     public void testIntegrate() {
        double result = elemFunc.integrate(ElemFuncType.I, ElemFuncType.I, 0, 0);
        assertEquals(0.5, result, delta);
     }
-    
 }
+
+    
+

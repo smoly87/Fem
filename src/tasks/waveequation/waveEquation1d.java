@@ -5,17 +5,18 @@
  */
 package tasks.waveequation;
 
+import timesolver.AnalyticEigSolver;
 import elemfunc.d1.Element1d;
 import elemfunc.d1.LinN;
 import elemfunc.d1.LinNBuilder;
-import elemfunc.d1.quad.FemTimeSolver1dQuad;
+import timesolver.FemTimeSolver1dQuad;
 import elemfunc.d1.quad.QuadNBuilder;
 import engine.BoundaryConditions;
 import engine.ElemFunc;
 import engine.ElemFuncType;
 import engine.Element;
-import engine.FemTimeSolver;
-import engine.FemTimeSolver1d;
+import timesolver.FemTimeSolver;
+import timesolver.FemTimeSolver1d;
 import engine.Mesh;
 import engine.SimpleMeshBuilder;
 import engine.Task;
@@ -38,6 +39,8 @@ import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import timesolver.FDMTimeSolver;
 /**
  *
  * @author Andrey
@@ -111,7 +114,7 @@ public class waveEquation1d extends Task{
         //mesh = SimpleMeshBuilder.create1dLineMesh(elemNum, true);
   
         
-        mesh = SimpleMeshBuilder.create1dLineMeshQuad(elemNum, true);
+        mesh = SimpleMeshBuilder.create1dLineMesh(elemNum, true);
        
         
         this.initMatrixes(mesh.getNodesCount());
@@ -153,6 +156,36 @@ public class waveEquation1d extends Task{
         // -1 cause first time node was cutting off by applying for boundary conditions.
         int Tn = timeSolver.getTimeMesh().getNodesCount() - 1;
         double[][] res = convertSolution(X, timeSolver.getBoundaryConitions(), Tn);
+        return res;
+    }
+    
+    protected double[][] restoreBoundaryFDM(double[][]X, BoundaryConditions timeBoundaryCond){
+        int BN = boundaryConitions.getNodesCount();
+        int N = X[1].length ;
+        double[][] res = new double[X.length][N + BN];
+        for(int t = 0; t < timeSteps; t++){
+            double[] values = new double[N];
+            values = restoreBoundary(X[t], boundaryConitions); 
+            res[t + 1] = values;
+        }
+        
+        res[0] = restoreBoundary(timeBoundaryCond.getBoundNodes(), boundaryConitions);
+        
+        return res;
+    }
+    
+    public double[][] solveFDM(){
+        init();
+                       
+        FDMTimeSolver timeSolverFDM = new FDMTimeSolver();
+        OpenMapRealVector Y0 = getInitialConditions(mesh.getPoints());
+        Y0 = removeElemsForBoundConds(Y0, boundaryConitions);
+        int Tn = 20;
+        double[][]X = timeSolverFDM.solve(C, K, Y0, Tn, 0, 1);
+        
+        
+        //double[][] res = convertSolution(new ArrayRealVector, timeSolver.getBoundaryConitions(), Tn);
+        double[][] res = restoreBoundaryFDM(X,  timeSolver.getBoundaryConitions());
         return res;
     }
 }

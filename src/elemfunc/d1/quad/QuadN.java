@@ -68,7 +68,7 @@ public class QuadN extends ElemFunc implements UnivariateFunction{
                 res = (2*x+1)/2;
                 break;
         }
-        double m = 2/getH();
+        double m = 2.0/getH();
         return m*res;
     }
 
@@ -86,7 +86,7 @@ public class QuadN extends ElemFunc implements UnivariateFunction{
                 break;
         }
         
-        double m = (double)2/getH();
+        double m = (double)2.0/getH();
         return m*m*res;
     }
 

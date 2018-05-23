@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tasks.waveequation;
+package timesolver;
 
 import engine.BoundaryConditions;
 import engine.Task;
@@ -17,6 +17,7 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import tasks.waveequation.EigSolution;
 
 /**
  *
@@ -74,7 +75,7 @@ public class AnalyticEigSolver {
         }
        
         
-        RealMatrix R = H.multiply(Convertion.ColVector2Matrix(HCF));
+        RealMatrix R = H.multiply(new Array2DRowRealMatrix( Convertion.ColVector2Matrix(HCF)));
         return R.getColumn(0);
     }
     

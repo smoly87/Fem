@@ -41,6 +41,21 @@ public class MathUtils {
         
     }
     
+    public static double arrQuadSumm(double[][] X){
+        double s = 0;
+        for(int i = 0; i < X.length; i++){
+            s += arrQuadSumm(X[i]);
+        }
+        return s;
+    }
+    public static double arrQuadSumm(double[] X){
+        double s = 0;
+        for(int i = 1; i < X.length; i++){
+            s += X[i]*X[i];
+        }
+        return s;
+    }
+     
     public static double arrMax(double[] X){
         double max = X[0];
         for(int i = 1; i < X.length; i++){
@@ -56,5 +71,25 @@ public class MathUtils {
             if( val > max) max = val;
         }
         return max;
+    }
+    
+    public static boolean arrEquals(double[][]A, double[][]B, double eps){
+         for(int i = 0; i < 3; i++){
+            for(int j = 0; j < 3; j++){ 
+               if(Math.abs(A[i][j] - B[i][j]) >eps){
+                   return false;
+               } 
+            }
+         }
+         return true;
+    }
+     public static double[][] arrMultiply(double[][]A, double k){
+         double[][]R = new double[A.length][A[0].length];
+         for(int i = 0; i < 3; i++){
+            for(int j = 0; j < 3; j++){ 
+               R[i][j] = k * A[i][j];
+            }
+         }
+         return R;
     }
 }

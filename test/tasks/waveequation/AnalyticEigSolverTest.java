@@ -5,6 +5,7 @@
  */
 package tasks.waveequation;
 
+import timesolver.AnalyticEigSolver;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;

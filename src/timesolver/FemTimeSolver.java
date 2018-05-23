@@ -3,9 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package engine;
+package timesolver;
 
 import elemfunc.d1.LinNBuilder;
+import engine.BoundaryConditions;
+import engine.ElemFuncBuilder;
+import engine.Element;
+import engine.Mesh;
+import engine.Task;
 import engine.utils.common.MathUtils;
 import engine.utils.common.Pair;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
